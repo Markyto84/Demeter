@@ -98,7 +98,7 @@ devem importar a API pública do módulo.
    mude o formato ou a interpretação dos dados, criar e planejar uma versão nova
    com compatibilidade explícita, antes de substituir o fluxo existente.
 4. Executar testes do módulo, de Entregas e dos relatórios, além do build.
-5. Publicar pelo processo habitual do Cnutri. O módulo é parte da aplicação;
+5. Publicar pelo processo habitual do Deméter. O módulo é parte da aplicação;
    mudanças no servidor exigem reinício da API, e mudanças React exigem publicação
    do frontend. Não é um plugin carregado remotamente.
 

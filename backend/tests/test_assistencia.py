@@ -265,11 +265,11 @@ class AssistenciaTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(r.json()["eventos"], [])
 
 
-@unittest.skipUnless(os.environ.get("CNUTRI_TEST_POSTGRES_URL"), "Requer PostgreSQL de teste")
+@unittest.skipUnless(os.environ.get("DEMETER_TEST_POSTGRES_URL"), "Requer PostgreSQL de teste")
 class AssistenciaPostgresTest(AssistenciaTest):
     async def criar_engine(self):
         self.schema = "teste_assistencia_" + uuid4().hex
-        url = os.environ["CNUTRI_TEST_POSTGRES_URL"]
+        url = os.environ["DEMETER_TEST_POSTGRES_URL"]
         self.admin_engine = create_async_engine(url)
         async with self.admin_engine.begin() as conn:
             await conn.exec_driver_sql(f'CREATE SCHEMA "{self.schema}"')

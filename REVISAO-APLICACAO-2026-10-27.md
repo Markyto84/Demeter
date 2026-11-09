@@ -1,4 +1,4 @@
-# Revisão do Cnutri — 27/10/2026
+# Revisão do Deméter — 27/10/2026
 
 Versão examinada: `1b9a834`. Revisão de código, testes automatizados e sondagens com dados
 fictícios em PostgreSQL temporário. Na aplicação em uso, foram realizadas somente leituras.
@@ -110,9 +110,9 @@ os controles das rotas autenticadas.
 **Aceite:** enviar Médico e Enfermagem sem sessão, com token expirado e com sessão de outra unidade;
 os três cenários devem manter o fluxo público e os mesmos controles de validação/idempotência.
 
-Fontes: [Kiosk.jsx](<C:/Users/Suporte/.codex/worktrees/rastreabilidade-dietas/Projeto Cnutri/frontend/src/pages/Kiosk.jsx:78>),
-[api.js](<C:/Users/Suporte/.codex/worktrees/rastreabilidade-dietas/Projeto Cnutri/frontend/src/services/api.js:7>) e
-[public_kiosk.py](<C:/Users/Suporte/.codex/worktrees/rastreabilidade-dietas/Projeto Cnutri/backend/app/api/public_kiosk.py:63>).
+Fontes: [Kiosk.jsx](<C:/Users/Suporte/.codex/worktrees/rastreabilidade-dietas/Projeto Demeter/frontend/src/pages/Kiosk.jsx:78>),
+[api.js](<C:/Users/Suporte/.codex/worktrees/rastreabilidade-dietas/Projeto Demeter/frontend/src/services/api.js:7>) e
+[public_kiosk.py](<C:/Users/Suporte/.codex/worktrees/rastreabilidade-dietas/Projeto Demeter/backend/app/api/public_kiosk.py:63>).
 
 ## 2. A rota antiga permite reabrir cancelamentos e pular etapas
 
@@ -131,7 +131,7 @@ de atualizações simultâneas. Uma eventual reabertura precisa de fluxo explíc
 **Aceite:** ambas as rotas recusam salto de etapa e reabertura de cancelados/entregues,
 mantendo a sequência Pendentes → Em preparo → Prontos.
 
-Fonte: [pedidos.py](<C:/Users/Suporte/.codex/worktrees/rastreabilidade-dietas/Projeto Cnutri/backend/app/api/pedidos.py:63>).
+Fonte: [pedidos.py](<C:/Users/Suporte/.codex/worktrees/rastreabilidade-dietas/Projeto Demeter/backend/app/api/pedidos.py:63>).
 
 ## 3. Cancelamento durante a preparação da filipeta pode chegar depois da última validação
 
@@ -151,7 +151,7 @@ de ser válido. Diferenciar um documento já transmitido de um trabalho que aind
 **Aceite:** cancelamento confirmado antes da transmissão impede a chamada ao transporte.
 Testar a concorrência em PostgreSQL e preservar o tratamento de envios incertos, evitando cópias duplicadas.
 
-Fonte: [fila_impressao.py](<C:/Users/Suporte/.codex/worktrees/rastreabilidade-dietas/Projeto Cnutri/backend/app/services/fila_impressao.py:112>).
+Fonte: [fila_impressao.py](<C:/Users/Suporte/.codex/worktrees/rastreabilidade-dietas/Projeto Demeter/backend/app/services/fila_impressao.py:112>).
 
 ## 4. O cadastro aceita códigos de unidade que conflitam com os endereços
 
@@ -172,9 +172,9 @@ os links numéricos existentes. A validação deve acontecer no backend, com men
 **Aceite:** códigos conflitantes são rejeitados antes de salvar; novos nomes válidos continuam
 resolvendo exatamente a unidade cadastrada, sem alterar IDs ou dados de outras unidades.
 
-Fontes: [schemas.py](<C:/Users/Suporte/.codex/worktrees/rastreabilidade-dietas/Projeto Cnutri/backend/app/schemas/schemas.py:20>),
-[cozinha.py](<C:/Users/Suporte/.codex/worktrees/rastreabilidade-dietas/Projeto Cnutri/backend/app/api/cozinha.py:19>) e
-[App.jsx](<C:/Users/Suporte/.codex/worktrees/rastreabilidade-dietas/Projeto Cnutri/frontend/src/App.jsx:15>).
+Fontes: [schemas.py](<C:/Users/Suporte/.codex/worktrees/rastreabilidade-dietas/Projeto Demeter/backend/app/schemas/schemas.py:20>),
+[cozinha.py](<C:/Users/Suporte/.codex/worktrees/rastreabilidade-dietas/Projeto Demeter/backend/app/api/cozinha.py:19>) e
+[App.jsx](<C:/Users/Suporte/.codex/worktrees/rastreabilidade-dietas/Projeto Demeter/frontend/src/App.jsx:15>).
 
 ## 5. A página inicial usa uma unidade inexistente no ambiente atual
 
@@ -191,7 +191,7 @@ automático para ela. Rotas desconhecidas devem apresentar uma página de endere
 **Aceite:** `/` funciona com uma, várias ou nenhuma unidade ativa e não escolhe uma unidade
 inexistente ou arbitrária.
 
-Fonte: [App.jsx](<C:/Users/Suporte/.codex/worktrees/rastreabilidade-dietas/Projeto Cnutri/frontend/src/App.jsx:22>).
+Fonte: [App.jsx](<C:/Users/Suporte/.codex/worktrees/rastreabilidade-dietas/Projeto Demeter/frontend/src/App.jsx:22>).
 
 ## 6. Exportações grandes acumulam todos os pedidos na memória
 
@@ -208,7 +208,7 @@ executado um teste de carga com esse volume e não foi constatada uma falha de e
 planilhas extensas em tarefa de segundo plano, com progresso e controle de volume. Informar
 o limite do formato escolhido e preservar o mesmo filtro na tela e no arquivo.
 
-Fonte: [relatorio_dietas.py](<C:/Users/Suporte/.codex/worktrees/rastreabilidade-dietas/Projeto Cnutri/backend/app/api/relatorio_dietas.py:62>).
+Fonte: [relatorio_dietas.py](<C:/Users/Suporte/.codex/worktrees/rastreabilidade-dietas/Projeto Demeter/backend/app/api/relatorio_dietas.py:62>).
 
 ## 7. Instalações Python ainda não são totalmente reproduzíveis
 
@@ -224,8 +224,8 @@ Python ao processo de validação.
 Essa recomendação trata de reprodução e manutenção. Não foi demonstrada uma vulnerabilidade
 Python nesta revisão; `pip check` verifica compatibilidade de dependências, não vulnerabilidades.
 
-Fontes: [requirements.txt](<C:/Users/Suporte/.codex/worktrees/rastreabilidade-dietas/Projeto Cnutri/backend/requirements.txt:1>) e
-[Dockerfile](<C:/Users/Suporte/.codex/worktrees/rastreabilidade-dietas/Projeto Cnutri/backend/Dockerfile:9>).
+Fontes: [requirements.txt](<C:/Users/Suporte/.codex/worktrees/rastreabilidade-dietas/Projeto Demeter/backend/requirements.txt:1>) e
+[Dockerfile](<C:/Users/Suporte/.codex/worktrees/rastreabilidade-dietas/Projeto Demeter/backend/Dockerfile:9>).
 
 ## Verificações realizadas e limites
 

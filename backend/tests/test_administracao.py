@@ -230,12 +230,12 @@ class AdministracaoTest(unittest.IsolatedAsyncioTestCase):
             await ws_cozinha(anonimo, self.a)
             self.assertFalse(anonimo.aceito)
             self.assertEqual(anonimo.fechado, 1008)
-            proibido = SocketTeste(["cnutri", token])
+            proibido = SocketTeste(["demeter", token])
             await ws_cozinha(proibido, self.b)
             self.assertFalse(proibido.aceito)
-            permitido = SocketTeste(["cnutri", token])
+            permitido = SocketTeste(["demeter", token])
             await ws_cozinha(permitido, self.a)
-            self.assertEqual(permitido.aceito, "cnutri")
+            self.assertEqual(permitido.aceito, "demeter")
 
 
 if __name__ == "__main__":

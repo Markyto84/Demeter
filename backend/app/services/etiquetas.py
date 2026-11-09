@@ -14,7 +14,7 @@ from .formulario_paciente import ACOMPANHANTE, AMBOS, normalizar_nome
 LARGURA_MM = 89
 ALTURA_MM = 36
 RODAPE = "CONSUMO IMEDIATO"
-ICONE = Path(__file__).resolve().parents[1] / "assets" / "cnutri-icon-v2.png"
+ICONE = Path(__file__).resolve().parents[1] / "assets" / "demeter-icon-v2.png"
 
 
 def nome_etiqueta(pedido):

@@ -39,7 +39,7 @@ export function useOperacao(filialId, som = false, entregas = false, cozinhaSemL
       criarSocket: (id, credencial) => {
         const protocolo = window.location.protocol === 'https:' ? 'wss' : 'ws'
         if (cozinhaSemLogin) return new WebSocket(`${protocolo}://${window.location.host}/ws/cozinha-publica/${id}`)
-        return credencial ? new WebSocket(`${protocolo}://${window.location.host}/ws/cozinha/${id}`, ['cnutri', credencial])
+        return credencial ? new WebSocket(`${protocolo}://${window.location.host}/ws/cozinha/${id}`, ['demeter', credencial])
           : new WebSocket(`${protocolo}://${window.location.host}/ws/operacao/${id}`)
       },
       onEstado: ({ unidades, ...dados }) => atualizar((s) => ({ ...s, ...dados, filiais: unidades })),

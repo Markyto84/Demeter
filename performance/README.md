@@ -1,4 +1,4 @@
-# Teste de pico de solicitações — Ceres Care
+# Teste de pico de solicitações — Deméter
 
 Laboratório descartável para avaliar o servidor central sem gerar pedidos, impressões ou alterações no sistema em uso. Resultados de 28/10/2026: [relatório](../TESTE-DE-PICO-2026-10-28.md).
 
@@ -11,7 +11,7 @@ Laboratório descartável para avaliar o servidor central sem gerar pedidos, imp
 - API, PostgreSQL e Nginx recebem cotas que somam quatro CPUs, com limites de 2 GiB, 4 GiB e 256 MiB de memória. A diferença até a referência de 8 GB fica como margem para o sistema operacional. Isso não reproduz uma máquina física com exatamente quatro núcleos e 8 GB totais.
 - O gerador, o coletor TCP de impressão e os proxies de rede são instrumentos de teste e ficam fora das cotas dos três serviços. Compartilham o mesmo host do laboratório.
 - Os scripts recusam URLs de carga fora de `https://127.0.0.1:...`, usam uma CA temporária somente no cliente e conferem `URL_PUBLICA=https://carga.invalid`.
-- A limpeza é limitada ao projeto `ceres-carga-*` sob `work/`; nunca apaga o banco da aplicação em uso.
+- A limpeza é limitada ao projeto `demeter-carga-*` sob `work/`; nunca apaga o banco da aplicação em uso.
 
 O arquivo `unidades-privado.json`, o `compose.json` e as chaves TLS ficam somente em `work/`, ignorado pelo Git. Não publique esses arquivos. Execute Python normalmente, sem `-O`, para preservar as verificações `assert` dos scripts. O namespace do proxy usa `NET_ADMIN` somente dentro do contêiner do laboratório.
 
@@ -19,7 +19,7 @@ O arquivo `unidades-privado.json`, o `compose.json` e as chaves TLS ficam soment
 
 Docker com Compose e contêineres Linux; aproximadamente 2 GB livres para o banco de teste e seus dados, além das imagens. Use um ambiente Python 3.12+ dedicado com `pip install -r performance/requirements.txt`. As dependências da aplicação rodam dentro da imagem do backend.
 
-As imagens `ceres-care/backend:0.1.0`, `ceres-care/frontend:0.1.0`, `postgres:16-alpine` e `python:3.12-slim` precisam existir localmente. As duas primeiras correspondem à versão em `de14f28`, anterior às alterações ainda pendentes para inicialização limpa de produção. Os testes não usam os fontes parcialmente editados do backend. A reprodução exata requer os IDs de imagem registrados em `ambiente-resultados.json`; etiquetas Docker e imagens de base podem mudar.
+As imagens `demeter/backend:0.1.0`, `demeter/frontend:0.1.0`, `postgres:16-alpine` e `python:3.12-slim` precisam existir localmente. As duas primeiras correspondem à versão em `de14f28`, anterior às alterações ainda pendentes para inicialização limpa de produção. Os testes não usam os fontes parcialmente editados do backend. A reprodução exata requer os IDs de imagem registrados em `ambiente-resultados.json`; etiquetas Docker e imagens de base podem mudar.
 
 O gerador faz uma consulta leve à saúde da aplicação atual em `http://127.0.0.1:5173/api/health/ready` a cada dez segundos e interrompe após três falhas consecutivas ou respostas acima de 2,5 segundos. Adapte esse endereço no código se a aplicação atual estiver em outro local. Nenhuma solicitação de dieta é enviada para esse endereço.
 
@@ -31,7 +31,7 @@ A partir da raiz do projeto, em um terminal com o ambiente Python de testes ativ
 python performance/ambiente.py iniciar
 ```
 
-O comando imprime uma pasta absoluta `.../work/ceres-carga-...`. Substitua `<pasta>` nos comandos abaixo pelo caminho exibido, entre aspas:
+O comando imprime uma pasta absoluta `.../work/demeter-carga-...`. Substitua `<pasta>` nos comandos abaixo pelo caminho exibido, entre aspas:
 
 ```text
 python performance/executar.py "<pasta>"

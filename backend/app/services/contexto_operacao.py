@@ -8,7 +8,7 @@ from ..core.presenca import sessoes_online
 from ..models.models import ConfiguracaoOperacional, Filial, SessaoCopeira, Usuario
 
 INTERVALO_CONTEXTO = 5
-logger = logging.getLogger("cnutri.operacao")
+logger = logging.getLogger("demeter.operacao")
 
 
 def limites(config):

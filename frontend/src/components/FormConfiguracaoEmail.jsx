@@ -55,7 +55,7 @@ export default function FormConfiguracaoEmail({ config, form, setForm, ocupado, 
         <a className="font-semibold underline" href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener noreferrer">Abrir Senhas de app no Google</a>
       </div>}
       {!config.protecao_preparada && <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-950">A TI precisa preparar a proteção das credenciais no servidor antes de cadastrar a senha.</p>}
-      {!config.acesso_seguro && <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-950">Cadastre a senha usando HTTPS ou, no próprio computador do servidor, <a className="underline" href={enderecoAdminLocal(window.location.origin)}>abra o acesso local ao Cnutri</a>.</p>}
+      {!config.acesso_seguro && <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-950">Cadastre a senha usando HTTPS ou, no próprio computador do servidor, <a className="underline" href={enderecoAdminLocal(window.location.origin)}>abra o acesso local ao Deméter</a>.</p>}
       <Campo titulo={google ? 'Senha de app do Google (16 caracteres)' : 'Senha SMTP'} ajuda="Vazio mantém a credencial já cadastrada. Ao trocar o servidor ou usuário, cadastre a credencial novamente.">
         <input className={CAMPO} type="password" maxLength={512} autoComplete="new-password" value={form.senha_app}
           disabled={ocupado || !config.protecao_preparada || !config.acesso_seguro} onChange={(e) => alterar('senha_app', e.target.value)}

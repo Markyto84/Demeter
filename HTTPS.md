@@ -1,13 +1,13 @@
-# HTTPS do Ceres Care
+# HTTPS do Deméter
 
 O projeto tem configuração de HTTPS para a instalação Windows atual e para o
 servidor Linux em Docker. **Preparar os arquivos não ativa HTTPS.** É necessário
 informar o endereço da aplicação e o certificado de servidor com sua chave privada.
-O domínio do AD, sozinho, não define o endereço HTTPS do Cnutri.
+O domínio do AD, sozinho, não define o endereço HTTPS do Deméter.
 
-## Endereço solicitado: cnutri.preventsenior.com.br
+## Endereço solicitado: demeter.preventsenior.com.br
 
-O destino solicitado para a intranet é `https://cnutri.preventsenior.com.br`.
+O destino solicitado para a intranet é `https://demeter.preventsenior.com.br`.
 Na verificação de 27/10/2026, a instalação em uso responde em
 `http://10.1.140.15:5173`. Os dois DNS consultados da rede retornaram nome inexistente,
 e nenhum certificado correspondente foi localizado nos arquivos da instalação
@@ -15,14 +15,14 @@ ou nos repositórios pessoais de certificados do Windows consultados.
 
 Para concluir:
 
-1. A TI deve cadastrar o registro **A** `cnutri.preventsenior.com.br` no DNS interno
+1. A TI deve cadastrar o registro **A** `demeter.preventsenior.com.br` no DNS interno
    apontando para **10.1.140.15**, com o IP fixo ou reservado para esta instalação.
 2. Disponibilizar certificado/cadeia e chave válidos para esse nome, ou um PFX.
    Informe somente os caminhos dos arquivos; senhas e chaves ficam fora do chat/Git.
-3. Executar o configurador abaixo com `-Dominio 'cnutri.preventsenior.com.br'`
+3. Executar o configurador abaixo com `-Dominio 'demeter.preventsenior.com.br'`
    e os arquivos reais. O configurador valida DNS, certificado e conexão antes da troca.
 4. Após confirmar o novo HTTPS, atualizar `URL_RECEBIMENTO_PUBLICA` no ambiente privado
-   do backend para `https://cnutri.preventsenior.com.br` e reiniciar somente a API,
+   do backend para `https://demeter.preventsenior.com.br` e reiniciar somente a API,
    conferindo antes que não haja trabalhos de impressão em processamento.
 5. Conferir os formulários de cada unidade, login, cozinha, entregas e atualizações
    em tempo real pelo novo domínio. Os caminhos das páginas permanecem os mesmos.
@@ -39,7 +39,7 @@ O cadastro é feito no DNS que atende os dispositivos da intranet. Consulte a
 
 ## Dados necessários da TI
 
-- Nome DNS reservado ao Cnutri, por exemplo `cnutri.empresa.local`, resolvendo para
+- Nome DNS reservado ao Deméter, por exemplo `demeter.empresa.local`, resolvendo para
   o IP do servidor correto.
 - Certificado válido para esse nome na extensão **SAN**, com uso de autenticação
   de servidor. Pode ser PEM (certificado/cadeia e chave) ou PFX com a chave privada.
@@ -63,15 +63,15 @@ Na pasta do projeto, com os arquivos fornecidos pela TI:
 
 ```powershell
 # Somente preparar e validar; mantém o acesso atual.
-.\configurar-https.ps1 -Dominio 'cnutri.empresa.local' `
-  -Certificado 'C:\TI\cnutri-cadeia.pem' -Chave 'C:\TI\cnutri-chave.pem'
+.\configurar-https.ps1 -Dominio 'demeter.empresa.local' `
+  -Certificado 'C:\TI\demeter-cadeia.pem' -Chave 'C:\TI\demeter-chave.pem'
 
 # Preparar e ativar após DNS e certificados estarem corretos.
-.\configurar-https.ps1 -Dominio 'cnutri.empresa.local' `
-  -Certificado 'C:\TI\cnutri-cadeia.pem' -Chave 'C:\TI\cnutri-chave.pem' -Aplicar
+.\configurar-https.ps1 -Dominio 'demeter.empresa.local' `
+  -Certificado 'C:\TI\demeter-cadeia.pem' -Chave 'C:\TI\demeter-chave.pem' -Aplicar
 
 # Alternativa PFX: a senha é solicitada no terminal local, com entrada oculta.
-.\configurar-https.ps1 -Dominio 'cnutri.empresa.local' -Pfx 'C:\TI\cnutri.pfx' -Aplicar
+.\configurar-https.ps1 -Dominio 'demeter.empresa.local' -Pfx 'C:\TI\demeter.pfx' -Aplicar
 ```
 
 O arquivo PEM da chave deve estar legível sem senha pelo serviço. Se a TI fornece
@@ -97,12 +97,12 @@ Após a ativação, os endereços ficam assim:
 
 | Uso | Endereço |
 | --- | --- |
-| Formulário | `https://cnutri.empresa.local/unidade-havai` |
-| Login | `https://cnutri.empresa.local/login` |
-| Gestão | `https://cnutri.empresa.local/gestao` |
-| Administração | `https://cnutri.empresa.local/admin` |
-| Cozinha | `https://cnutri.empresa.local/cozinha/1` |
-| Entregas | `https://cnutri.empresa.local/entregas/1` |
+| Formulário | `https://demeter.empresa.local/unidade-havai` |
+| Login | `https://demeter.empresa.local/login` |
+| Gestão | `https://demeter.empresa.local/gestao` |
+| Administração | `https://demeter.empresa.local/admin` |
+| Cozinha | `https://demeter.empresa.local/cozinha/1` |
+| Entregas | `https://demeter.empresa.local/entregas/1` |
 
 HTTP nas portas 80 e 5173 redireciona para o nome configurado, preservando caminho
 e parâmetros. O destino não usa o cabeçalho Host enviado pelo cliente. As
@@ -143,9 +143,9 @@ Edite `work/https-linux.env` no servidor. Esse arquivo fica fora do Git. Salvar
 os valores não ativa o HTTPS. Ajuste para os dados reais fornecidos pela TI:
 
 ```dotenv
-CNUTRI_HOSTNAME=cnutri.preventsenior.com.br
-CNUTRI_TLS_DIR=/etc/ceres-care/tls
-URL_PUBLICA=https://${CNUTRI_HOSTNAME}
+DEMETER_HOSTNAME=demeter.preventsenior.com.br
+DEMETER_TLS_DIR=/etc/demeter/tls
+URL_PUBLICA=https://${DEMETER_HOSTNAME}
 URL_RECEBIMENTO_PUBLICA=${URL_PUBLICA}
 ```
 

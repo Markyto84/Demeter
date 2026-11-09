@@ -2,7 +2,7 @@ import axios from 'axios'
 
 export const recebimentoApi = axios.create({ baseURL: '/api/recebimentos', timeout: 15000 })
 export const codigoRecebimentoValido = (codigo) => /^[A-Za-z0-9_-]{43}$/.test(codigo)
-const CHAVE_RETORNO_QR = 'cnutri-retorno-qr'
+const CHAVE_RETORNO_QR = 'demeter-retorno-qr'
 
 export function guardarCodigoRecebimento(codigo, armazenamento = sessionStorage) {
   if (codigoRecebimentoValido(codigo)) armazenamento.setItem(CHAVE_RETORNO_QR, codigo)

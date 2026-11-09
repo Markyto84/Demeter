@@ -90,6 +90,6 @@ class EnderecosUnidadesTest(unittest.IsolatedAsyncioTestCase):
                 self.assertNotIn('Paciente', r.text)
 
 
-@unittest.skipUnless(os.environ.get('CNUTRI_TEST_POSTGRES_URL'), 'Requer PostgreSQL de teste')
+@unittest.skipUnless(os.environ.get('DEMETER_TEST_POSTGRES_URL'), 'Requer PostgreSQL de teste')
 class EnderecosUnidadesPostgresTest(EnderecosUnidadesTest):
     fixture = fixtures.CozinhaSemLoginPostgresTest

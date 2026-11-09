@@ -1,4 +1,4 @@
-# Teste de pico de solicitações — Ceres Care
+# Teste de pico de solicitações — Deméter
 
 **Data:** 28/10/2026. **Referência solicitada:** 4 vCPUs e 8 GB. **Base testada:** imagens Linux 0.1.0, código da versão `de14f28`.
 

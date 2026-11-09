@@ -17,7 +17,7 @@ from .impressora import ErroEnvioImpressora, enviar_filipeta, montar_filipeta_co
 from .etiquetas import montar_etiqueta, nome_etiqueta
 from .recebimento_qr import preparar_codigo
 
-logger = logging.getLogger("cnutri.impressao")
+logger = logging.getLogger("demeter.impressao")
 ATIVOS = ("PENDENTE", "PROCESSANDO")
 
 

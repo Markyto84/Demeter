@@ -315,7 +315,7 @@ class TransporteEmailTest(unittest.TestCase):
         smtp.data.assert_not_called()
 
 
-@unittest.skipUnless(os.environ.get("CNUTRI_TEST_POSTGRES_URL"), "Requer PostgreSQL de teste")
+@unittest.skipUnless(os.environ.get("DEMETER_TEST_POSTGRES_URL"), "Requer PostgreSQL de teste")
 class EmailMedicoPostgresTest(EmailMedicoTest):
     async def test_migracao_smtp_preserva_credencial_google_anterior_no_postgres(self):
         from app.core.migracao_email import migrar_email
@@ -334,7 +334,7 @@ class EmailMedicoPostgresTest(EmailMedicoTest):
             self.assertEqual(decifrar_senha(self.a, config.senha_cifrada), SENHA_FICTICIA)
 
     async def criar_engine(self):
-        url = os.environ["CNUTRI_TEST_POSTGRES_URL"]
+        url = os.environ["DEMETER_TEST_POSTGRES_URL"]
         esquema = "email_" + uuid4().hex
         motor = create_async_engine(url)
         async with motor.begin() as conn:

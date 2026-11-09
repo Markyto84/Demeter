@@ -71,7 +71,7 @@ A tabela `eventos_assistenciais` guarda novos eventos, sem rotas para editá-los
 ou apagá-los. Pedidos anteriores ficam **Sem referência registrada**; nenhuma
 prescrição ou conferência é criada retroativamente.
 
-O Cnutri registra referência externa e evidências do fluxo de refeições.
+O Deméter registra referência externa e evidências do fluxo de refeições.
 Não emite nem assina a prescrição clínica: autenticidade, vigência e assinatura
 profissional permanecem no prontuário de origem. A conferência é manual, sem
 integração automática. O responsável pelo serviço valida o protocolo assistencial.

@@ -1,4 +1,4 @@
-# Ceres Care — instalação em etapas e homologação no Linux
+# Deméter — instalação em etapas e homologação no Linux
 
 Homologar é executar e registrar os testes do fluxo real no servidor de destino,
 com participação da TI e das equipes que usarão o sistema. Testes automatizados e

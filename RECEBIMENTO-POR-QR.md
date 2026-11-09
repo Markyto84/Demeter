@@ -21,7 +21,7 @@ Configure no ambiente privado do backend:
 URL_RECEBIMENTO_PUBLICA=http://10.1.140.15:5173
 ```
 
-Use o domínio/IP, protocolo e porta pelos quais os celulares acessam o Cnutri. Essa variável
+Use o domínio/IP, protocolo e porta pelos quais os celulares acessam o Deméter. Essa variável
 aceita somente a origem da aplicação, sem caminhos, credenciais ou parâmetros. Reinicie
 a API após mudar o endereço. O celular precisa alcançar esse endereço na intranet.
 Em uma futura migração, prefira manter um nome DNS estável; os links já impressos contêm

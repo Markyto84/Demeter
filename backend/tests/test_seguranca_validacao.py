@@ -203,7 +203,7 @@ class SegurancaValidacaoTest(unittest.IsolatedAsyncioTestCase):
         token = (await self.entrar("gestor"))["Authorization"].removeprefix("Bearer ")
         aceito = asyncio.Event()
         canal = AsyncMock()
-        canal.scope = {"subprotocols": ["cnutri", token]}
+        canal.scope = {"subprotocols": ["demeter", token]}
         async def aceitar(**_kwargs):
             aceito.set()
         async def aguardar():
@@ -256,7 +256,7 @@ class SegurancaValidacaoTest(unittest.IsolatedAsyncioTestCase):
         await self.entrar("nova.pessoa", "NovaSenha12!")
 
     async def test_cinco_falhas_limitam_login_persistido_sem_expor_senha_nos_logs(self):
-        with self.assertLogs("cnutri.seguranca", level="WARNING") as logs:
+        with self.assertLogs("demeter.seguranca", level="WARNING") as logs:
             for _ in range(5):
                 self.assertEqual((await self.client.post("/api/auth/login", data={"username": "admin", "password": "Errada@2026"})).status_code, 401)
         self.assertNotIn("Errada@2026", "".join(logs.output))

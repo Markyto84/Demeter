@@ -1,6 +1,6 @@
 """Migração PostgreSQL em schema temporário, revertido ao terminar o teste.
 
-Para executar, defina CNUTRI_TEST_POSTGRES_URL com um banco de teste PostgreSQL.
+Para executar, defina DEMETER_TEST_POSTGRES_URL com um banco de teste PostgreSQL.
 Não acessa usuários de outros schemas e só conecta ao endereço expressamente fornecido.
 """
 import os
@@ -19,10 +19,10 @@ from app.core.migracao_etiquetas import migrar_etiquetas
 from app.core.migracao_ad import migrar_ad
 
 
-@unittest.skipUnless(os.environ.get("CNUTRI_TEST_POSTGRES_URL"), "Requer CNUTRI_TEST_POSTGRES_URL para testar a migração PostgreSQL")
+@unittest.skipUnless(os.environ.get("DEMETER_TEST_POSTGRES_URL"), "Requer DEMETER_TEST_POSTGRES_URL para testar a migração PostgreSQL")
 class MigracaoLoginTest(unittest.IsolatedAsyncioTestCase):
     async def test_migracao_ad_preserva_senhas_vinculos_e_define_contas_locais(self):
-        engine = create_async_engine(os.environ["CNUTRI_TEST_POSTGRES_URL"])
+        engine = create_async_engine(os.environ["DEMETER_TEST_POSTGRES_URL"])
         schema = "teste_ad_" + uuid4().hex
         try:
             async with engine.connect() as conn:
@@ -50,7 +50,7 @@ class MigracaoLoginTest(unittest.IsolatedAsyncioTestCase):
             await engine.dispose()
 
     async def test_migracao_de_etiquetas_preserva_fila_e_separa_tipos_sem_reimprimir(self):
-        engine = create_async_engine(os.environ["CNUTRI_TEST_POSTGRES_URL"])
+        engine = create_async_engine(os.environ["DEMETER_TEST_POSTGRES_URL"])
         schema = "teste_etiquetas_" + uuid4().hex
         try:
             async with engine.connect() as conn:
@@ -75,7 +75,7 @@ class MigracaoLoginTest(unittest.IsolatedAsyncioTestCase):
         finally:
             await engine.dispose()
     async def test_migracao_operacional_preserva_pedidos_e_protege_chave_por_unidade(self):
-        engine = create_async_engine(os.environ["CNUTRI_TEST_POSTGRES_URL"])
+        engine = create_async_engine(os.environ["DEMETER_TEST_POSTGRES_URL"])
         schema = "teste_operacao_" + uuid4().hex
         try:
             async with engine.connect() as conn:
@@ -102,7 +102,7 @@ class MigracaoLoginTest(unittest.IsolatedAsyncioTestCase):
             await engine.dispose()
 
     async def test_migracao_preserva_contas_vinculos_e_senhas_e_e_idempotente(self):
-        engine = create_async_engine(os.environ["CNUTRI_TEST_POSTGRES_URL"])
+        engine = create_async_engine(os.environ["DEMETER_TEST_POSTGRES_URL"])
         schema = "teste_login_" + uuid4().hex
         try:
             async with engine.connect() as conn:

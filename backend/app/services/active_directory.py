@@ -1,4 +1,4 @@
-"""Valida uma conta previamente autorizada no Cnutri via LDAPS, sem guardar a senha.
+"""Valida uma conta previamente autorizada no Deméter via LDAPS, sem guardar a senha.
 
 Usa o próprio usuário no bind e na consulta da identidade; não exige uma conta de
 serviço nem altera o diretório. A chamada síncrona deve executar fora do event loop.

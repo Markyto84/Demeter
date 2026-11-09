@@ -10,7 +10,7 @@ export function criarChaveEnvio() {
 const memoria = new Map()
 
 export function chaveSalva(slug) {
-  try { return sessionStorage.getItem(`cnutri-envio:${slug}`) || memoria.get(slug) }
+  try { return sessionStorage.getItem(`demeter-envio:${slug}`) || memoria.get(slug) }
   catch { return memoria.get(slug) }
 }
 
@@ -19,14 +19,14 @@ export function obterChaveEnvio(slug) {
   if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(chave || '')) {
     chave = criarChaveEnvio()
     memoria.set(slug, chave)
-    try { sessionStorage.setItem(`cnutri-envio:${slug}`, chave) } catch { /* mantém a tentativa enquanto a página estiver aberta */ }
+    try { sessionStorage.setItem(`demeter-envio:${slug}`, chave) } catch { /* mantém a tentativa enquanto a página estiver aberta */ }
   }
   return chave
 }
 
 export function concluirTentativa(slug) {
   memoria.delete(slug)
-  try { sessionStorage.removeItem(`cnutri-envio:${slug}`) } catch { /* armazenamento indisponível */ }
+  try { sessionStorage.removeItem(`demeter-envio:${slug}`) } catch { /* armazenamento indisponível */ }
 }
 
 export function textoImpressao(estado) {

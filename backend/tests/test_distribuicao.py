@@ -22,7 +22,7 @@ class DistribuicaoTest(unittest.TestCase):
             compose = (destino / "docker-compose.prod.yml").read_text(encoding="utf-8")
             self.assertNotIn("build:", compose)
             self.assertNotIn("container_name:", compose)
-            self.assertIn("image: ceres-care/backend:0.1.0-teste", compose)
+            self.assertIn("image: demeter/backend:0.1.0-teste", compose)
             self.assertIn("pull_policy: never", compose)
             self.assertNotIn(b"\r", (destino / "servidor.sh").read_bytes())
 
@@ -38,7 +38,7 @@ class DistribuicaoTest(unittest.TestCase):
             conteudo.mkdir()
             preparar_conteudo(ROOT, conteudo, "0.1.0-teste")
             (conteudo / "imagens.tar").write_bytes(b"imagem ficticia, sem banco ou dados")
-            saida = raiz / "ceres-care.run"
+            saida = raiz / "demeter.run"
             resultado = gerar_run(conteudo, saida, "0.1.0-teste", revisao="ficticia", imagens={})
             self.assertEqual(hashlib.sha256(saida.read_bytes()).hexdigest(), resultado["sha256"])
             self.assertIn(resultado["sha256"], saida.with_suffix(".run.sha256").read_text())
@@ -46,7 +46,7 @@ class DistribuicaoTest(unittest.TestCase):
             self.assertEqual(manifesto["plataforma"], "linux/amd64")
             self.assertIn("imagens.tar", manifesto["arquivos"])
 
-    @unittest.skipUnless(os.environ.get("CNUTRI_TEST_DOCKER") == "1", "Requer imagem Python Linux local")
+    @unittest.skipUnless(os.environ.get("DEMETER_TEST_DOCKER") == "1", "Requer imagem Python Linux local")
     def test_linux_verifica_extrai_recusa_sobrescrita_e_detecta_corrupcao(self):
         with TemporaryDirectory() as pasta:
             raiz = Path(pasta)

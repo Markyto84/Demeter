@@ -27,7 +27,7 @@ async def atualizar(arquivo: Path):
             return
         if arquivo.exists():
             raise RuntimeError("O arquivo de entrega já existe. Escolha outro caminho para preservá-lo")
-        linhas = ["CNUTRI — ACESSOS TEMPORÁRIOS", "", "Acesse /login e defina uma nova senha no primeiro acesso.",
+        linhas = ["DEMETER — ACESSOS TEMPORÁRIOS", "", "Acesse /login e defina uma nova senha no primeiro acesso.",
             "Não envie este arquivo por chat nem o inclua no Git. Guarde-o sob responsabilidade da TI.", ""]
         for usuario in contas:
             senha = gerar_senha_temporaria()

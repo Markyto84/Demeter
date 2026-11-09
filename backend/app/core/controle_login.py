@@ -12,7 +12,7 @@ from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from ..models.models import LimiteLogin
 from .presenca import agora_utc
 
-logger = logging.getLogger("cnutri.seguranca")
+logger = logging.getLogger("demeter.seguranca")
 JANELA = timedelta(minutes=15)
 
 

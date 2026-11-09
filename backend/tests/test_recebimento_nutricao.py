@@ -63,7 +63,7 @@ class RecebimentoNutricaoTest(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
         self.f = self.fixture('test_fluxo_completo_sem_login_e_sem_pular_etapa')
         await self.f.asyncSetUp()
-        self.config = patch.object(settings, 'URL_RECEBIMENTO_PUBLICA', 'https://cnutri.test')
+        self.config = patch.object(settings, 'URL_RECEBIMENTO_PUBLICA', 'https://demeter.test')
         self.config.start()
         self.foto = foto_ficticia()
         self.horario = (datetime.now(timezone.utc) - timedelta(minutes=30)).replace(second=0, microsecond=0)
@@ -253,7 +253,7 @@ class RecebimentoNutricaoTest(unittest.IsolatedAsyncioTestCase):
         self.assertIsNotNone(imagem.crop((350,8,552,200)).getbbox())
 
 
-@unittest.skipUnless(os.environ.get('CNUTRI_TEST_POSTGRES_URL'),'Requer PostgreSQL de teste')
+@unittest.skipUnless(os.environ.get('DEMETER_TEST_POSTGRES_URL'),'Requer PostgreSQL de teste')
 class RecebimentoNutricaoPostgresTest(RecebimentoNutricaoTest):
     fixture=fixtures.CozinhaSemLoginPostgresTest
 

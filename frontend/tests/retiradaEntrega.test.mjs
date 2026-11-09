@@ -9,9 +9,9 @@ function armazenamento() {
 
 test('logout limpa intenções antigas do painel sem criar novas retiradas', () => {
   const s = armazenamento()
-  s.setItem('cnutri-retirada-apos-login', '{"pedidoId":32}')
+  s.setItem('demeter-retirada-apos-login', '{"pedidoId":32}')
   limparRetirada(s)
-  assert.equal(s.getItem('cnutri-retirada-apos-login'), null)
+  assert.equal(s.getItem('demeter-retirada-apos-login'), null)
 })
 
 test('retirada apresenta Em entrega até o recebimento, preservando cancelamento e conclusão', () => {

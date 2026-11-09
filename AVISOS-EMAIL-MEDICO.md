@@ -5,7 +5,7 @@ Ao avançar de **Em preparo** para **Pronto**, a mesma transação grava a mudan
 e o aviso. Essa é a etapa que representa a saída para entrega neste fluxo.
 
 O e-mail tem uma versão em texto e uma ficha HTML adaptável ao celular, com a
-paleta do Cnutri, nome do solicitante, unidade, número do pedido e as escolhas
+paleta do Deméter, nome do solicitante, unidade, número do pedido e as escolhas
 preenchidas: equipe, horário, refeição, cardápio, suco, sobremesa, local e
 observações. O conteúdo é congelado ao marcar Pronto e escapado para HTML.
 Não há formulário executável, imagens externas, rastreamento de abertura, foto
@@ -37,7 +37,7 @@ Também estão disponíveis modelos opcionais do Google:
 
 1. **Google Workspace · Senha de app**: informe o e-mail de dietas da unidade
    e uma senha de app de 16 caracteres. A conta precisa ter verificação em duas
-   etapas e a política do Workspace deve permitir esse recurso. O Cnutri usa
+   etapas e a política do Workspace deve permitir esse recurso. O Deméter usa
    `smtp.gmail.com:587`, STARTTLS, validando o certificado do Google. O endereço
    remetente é também o usuário de autenticação. A senha comum da conta não é
    o método de configuração desse envio automático.
@@ -47,7 +47,7 @@ Também estão disponíveis modelos opcionais do Google:
    salve a configuração e então teste a conexão.
 2. **Google Workspace · Relay autorizado pela TI**: informe o remetente da
    unidade. A TI autoriza previamente o IP público de saída do servidor e os
-   remetentes no console do Google. O Cnutri usa `smtp-relay.gmail.com:587` com
+   remetentes no console do Google. O Deméter usa `smtp-relay.gmail.com:587` com
    STARTTLS, sem armazenar senha nesse modo.
 
 Salve e use **Testar conexão**. O teste faz a conexão segura e, no modo senha
@@ -66,7 +66,7 @@ A credencial SMTP é cifrada com Fernet, vinculada à unidade e nunca devolvida
 pela API, gravada em auditoria ou incluída em mensagens de erro do provedor.
 Somente ADMIN_TI pode configurar, testar e acompanhar os avisos.
 
-Para cadastrar ou substituir a senha, use HTTPS ou acesse o Cnutri pelo
+Para cadastrar ou substituir a senha, use HTTPS ou acesse o Deméter pelo
 endereço de loopback na própria máquina do servidor. Os acessos HTTP da rede
 podem consultar o painel autenticado, mas não cadastrar credenciais.
 

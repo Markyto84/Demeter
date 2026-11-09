@@ -245,10 +245,10 @@ class CozinhaSemLoginTest(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(recusado.fechado, 1008)
 
 
-@unittest.skipUnless(os.environ.get('CNUTRI_TEST_POSTGRES_URL'), 'Requer PostgreSQL de teste')
+@unittest.skipUnless(os.environ.get('DEMETER_TEST_POSTGRES_URL'), 'Requer PostgreSQL de teste')
 class CozinhaSemLoginPostgresTest(CozinhaSemLoginTest):
     async def criar_engine(self):
-        url = os.environ['CNUTRI_TEST_POSTGRES_URL']
+        url = os.environ['DEMETER_TEST_POSTGRES_URL']
         self.schema = 'teste_cozinha_' + uuid4().hex
         self.admin_engine = create_async_engine(url)
         async with self.admin_engine.begin() as conn:

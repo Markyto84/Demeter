@@ -150,7 +150,7 @@ async def ws_operacao(websocket: WebSocket, filial_id: int):
 async def ws_cozinha(websocket: WebSocket, filial_id: int):
     """Painel Kanban da cozinha: recebe atualizações de pedidos em tempo real."""
     protocolos = websocket.scope.get("subprotocols", [])
-    if len(protocolos) != 2 or protocolos[0] != "cnutri":
+    if len(protocolos) != 2 or protocolos[0] != "demeter":
         await websocket.close(code=1008)
         return
     try:

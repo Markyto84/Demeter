@@ -19,7 +19,7 @@ preparo, entrega e auditoria de refeições/dietas hospitalares.
 
 ## 2. Stack e arquitetura
 
-- **Pasta única nesta estação:** `C:\Users\Suporte\Documents\Projeto Cnutri` (unificada em 19/10/2026)
+- **Pasta única nesta estação:** `C:\Users\Suporte\Documents\Projeto Demeter` (unificada em 19/10/2026)
 - **Backend:** FastAPI (Python 3.12) + SQLAlchemy 2.0 async + PostgreSQL 16 (JSONB)
 - **Frontend:** React + Vite + Tailwind CSS 4, axios, react-router-dom
 - **Impressão:** ESC/POS via socket TCP porta 9100 (sem dependência externa)
@@ -33,7 +33,7 @@ preparo, entrega e auditoria de refeições/dietas hospitalares.
 Ver instruções completas no [README.md](README.md). Resumo Windows:
 
 ```powershell
-Set-Location 'C:\Users\Suporte\Documents\Projeto Cnutri'
+Set-Location 'C:\Users\Suporte\Documents\Projeto Demeter'
 .\start.ps1                                # http://localhost:5173/unidade-havai
 .\stop.ps1                                 # encerra frontend e API
 ```
@@ -164,7 +164,7 @@ Set-Location 'C:\Users\Suporte\Documents\Projeto Cnutri'
 
 - ✅ Integração opcional com AD local preparada em 23/10/2026. Administração →
   Credenciais permite conta local ou vínculo AD (UPN), mantendo perfil e unidades
-  no Cnutri. Somente contas previamente cadastradas/ativas acessam; senha da rede
+  no Deméter. Somente contas previamente cadastradas/ativas acessam; senha da rede
   não é persistida, não há fallback local, certificados LDAPS são obrigatórios e
   login AD exige HTTPS. GUID fixa a identidade após o primeiro login; mantém um
   administrador local ativo e revoga sessões ao converter origem/identidade.
@@ -290,10 +290,10 @@ Set-Location 'C:\Users\Suporte\Documents\Projeto Cnutri'
   Detalhes em [SEGURANCA-ITENS-1-3.md](SEGURANCA-ITENS-1-3.md).
 
 
-- ✅ Título da aba do navegador definido como **Cnutri** em todas as páginas (20/10/2026)
+- ✅ Título da aba do navegador definido como **Deméter** em todas as páginas (20/10/2026)
 - ✅ Ícone da aba baseado na imagem enviada pelo usuário, com nitidez melhorada e sem os pontos
-  azuis à esquerda. Versão atual em `frontend/public/cnutri-icon-v2.png`, aplicada a todas as páginas
-  pelo HTML principal; imagem original preservada em `cnutri-icon.png` (20/10/2026)
+  azuis à esquerda. Versão atual em `frontend/public/demeter-icon-v2.png`, aplicada a todas as páginas
+  pelo HTML principal; imagem original preservada em `demeter-icon.png` (20/10/2026)
 - ✅ Formulário de Enfermagem com **14 campos na ordem**: Leito → Andar/Setor (lista) →
   Internado +6h? (Sim/Não) → Prontuário → Nome do Paciente → Matrícula → Data de Nascimento (data) →
   Sexo (MASCULINO/FEMININO) → Refeição (DESJEJUM/ALMOÇO/LANCHE DA TARDE/JANTAR/CEIA/KIT LANCHE) →
@@ -534,7 +534,7 @@ outro ambiente e alcance da validação, veja [MONITORAMENTO-E-RECUPERACAO.md](M
 
 ## 8. Fluxo de trabalho (multi-estação)
 
-- Código: `git pull` antes de editar → alterar → testar → `git push` (GitHub: Markyto84/Cnutri)
+- Código: `git pull` antes de editar → alterar → testar → `git push` (GitHub: Markyto84/Demeter)
 - Formulários: atualizar a cópia de configuração versionada ao sincronizar alterações feitas no painel
 - Dados: em produção, um único banco no servidor central acessado por todos via navegador
 - Ao concluir mudanças relevantes, **atualizar este arquivo** (seção 4 e 5)

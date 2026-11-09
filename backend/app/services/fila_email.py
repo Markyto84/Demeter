@@ -12,7 +12,7 @@ from ..core.presenca import agora_utc
 from ..models.models import AvisoEmailPedido, ConfiguracaoEmailUnidade, ContatoEmailPedido, Filial, Pedido
 from .email_medico import ErroEnvioEmail, compor_mensagem, obter_conexao, resumir_pedido, transportar_email
 
-logger = logging.getLogger("cnutri.email")
+logger = logging.getLogger("demeter.email")
 TEMPO_VALIDO = timedelta(minutes=30)
 
 
@@ -33,7 +33,7 @@ async def enfileirar_aviso_pronto(db, pedido):
     dominio_mensagem = (config.remetente if config else contato.email).rsplit("@", 1)[-1]
     db.add(AvisoEmailPedido(pedido_id=pedido.id, filial_id=pedido.filial_id, versao=pedido.versao,
         destinatario=contato.email, resumo=await resumir_pedido(db, pedido, filial),
-        mensagem_id=f"<cnutri-{uuid4().hex}@{dominio_mensagem}>", estado="PENDENTE" if habilitado else "DESATIVADO",
+        mensagem_id=f"<demeter-{uuid4().hex}@{dominio_mensagem}>", estado="PENDENTE" if habilitado else "DESATIVADO",
         erro=None if habilitado else "Envio desativado nesta unidade no momento em que a refeição ficou pronta",
         tentativas=0, proxima_tentativa_em=instante, expira_em=instante + TEMPO_VALIDO))
 

@@ -1,6 +1,6 @@
-# Ceres Care — executável de instalação Linux
+# Deméter — executável de instalação Linux
 
-O arquivo `ceres-care-VERSAO-linux-amd64.run` é um instalador executável com carga
+O arquivo `demeter-VERSAO-linux-amd64.run` é um instalador executável com carga
 compactada. Inclui imagens Docker da API, interface compilada, PostgreSQL vazio
 e Python usado pelo assistente. A plataforma desta distribuição é **linux/amd64**,
 para servidores Linux Intel/AMD 64 bits.
@@ -16,17 +16,17 @@ Copie `.run` e `.run.sha256` para o servidor e confira a soma indicada. Para abr
 o assistente de instalação nova:
 
 ```sh
-sudo sh ./ceres-care-VERSAO-linux-amd64.run
+sudo sh ./demeter-VERSAO-linux-amd64.run
 ```
 
 Ele solicita o endereço da aplicação, carrega as imagens locais e prepara os
-serviços em `/opt/ceres-care`. A pasta de destino precisa estar ausente. O instalador
-recusa uma instalação ou volume anterior do projeto `ceres-care`, preservando-os.
+serviços em `/opt/demeter`. A pasta de destino precisa estar ausente. O instalador
+recusa uma instalação ou volume anterior do projeto `demeter`, preservando-os.
 Migração do banco Windows e atualização de uma instalação existente exigem um
 procedimento próprio; esse instalador não transfere nem substitui dados existentes.
 
 Opções: `--ajuda`, `--verificar`, `--extrair /pasta/nova`, `--destino /pasta/nova`,
-`--endereco http://IP:porta` e `--certificados /etc/ceres-care/tls`.
+`--endereco http://IP:porta` e `--certificados /etc/demeter/tls`.
 
 Após instalar, use o arquivo privado `work/credencial-inicial.txt` para o primeiro
 login; a senha precisa ser trocada. HTTPS pode ser configurado posteriormente,

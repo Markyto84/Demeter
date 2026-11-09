@@ -55,7 +55,7 @@ indicado; a ferramenta verifica a identidade do cluster antes de prosseguir.
 Na instalação Windows atual:
 
 ```powershell
-Set-Location 'C:\Users\Suporte\Documents\Projeto Cnutri'
+Set-Location 'C:\Users\Suporte\Documents\Projeto Demeter'
 .\backend\.venv\Scripts\python.exe .\backend\validar_recuperacao.py --container dietas-db
 ```
 
@@ -69,7 +69,7 @@ destino configurado da API e não recebe senhas na linha de comando.
 1. Obtém uma visão consistente da origem e a compartilha com `pg_dump --snapshot`.
    Solicitações legítimas podem continuar sendo recebidas durante a cópia.
 2. Gera um arquivo customizado `-Fc`, com permissões privadas, fora do Git.
-3. Cria um banco com nome aleatório `cnutri_restore_<UUID>`, sem acesso concedido a
+3. Cria um banco com nome aleatório `demeter_restore_<UUID>`, sem acesso concedido a
    PUBLIC. A cópia não recebe API, seed ou consumidor de impressão.
 4. Restaura com `pg_restore --exit-on-error --single-transaction`, sem substituir
    o banco original nem importar permissões/owners de servidor.
@@ -109,7 +109,7 @@ não contém automaticamente esses arquivos ou os papéis globais do PostgreSQL.
 ### Resultado no Docker de produção
 
 `docker-compose.prod.yml` monta somente `work/recuperacao/` como leitura na API e
-configura `BACKUP_RELATORIO_ARQUIVO=/var/lib/cnutri-monitoramento/ultimo_resultado.json`.
+configura `BACKUP_RELATORIO_ARQUIVO=/var/lib/demeter-monitoramento/ultimo_resultado.json`.
 O diretório de dumps e o controle do Docker não são montados no servidor web.
 Em instalações nativas, o caminho padrão aponta para a pasta `work/recuperacao/`
 do projeto; a TI pode configurar a variável para outro arquivo privado autorizado.

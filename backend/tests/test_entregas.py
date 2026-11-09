@@ -275,7 +275,7 @@ class EntregasTest(unittest.IsolatedAsyncioTestCase):
         token = await self.entrar()
         with patch("app.main.SessionLocal", self.sessoes):
             interno = SocketTeste()
-            interno.scope = {"subprotocols": ["cnutri", token["Authorization"].removeprefix("Bearer ")]}
+            interno.scope = {"subprotocols": ["demeter", token["Authorization"].removeprefix("Bearer ")]}
             await ws_cozinha(interno, self.a)
             self.assertTrue(interno.aceito)
             socket = SocketTeste()

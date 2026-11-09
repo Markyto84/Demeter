@@ -11,12 +11,12 @@ const lerAtalho = atalho => {
 }
 const textoAtalho = atalho => lerAtalho(atalho).toString('utf16le')
 
-for (const origem of ['http://10.1.140.15:5173', 'https://cnutri.empresa.local']) {
+for (const origem of ['http://10.1.140.15:5173', 'https://demeter.empresa.local']) {
   test(`atalho distribuído abre diretamente a unidade usando ${origem}`, () => {
     const atalho = criarAtalhoUnidade(unidade, origem)
     assert.equal(atalho.url, origem + '/unidade-colorado')
-    assert.equal(atalho.nomeArquivo, 'Cnutri - unidade-colorado.zip')
-    assert.equal(atalho.nomeAtalho, 'Cnutri - unidade-colorado.lnk')
+    assert.equal(atalho.nomeArquivo, 'Deméter - unidade-colorado.zip')
+    assert.equal(atalho.nomeAtalho, 'Deméter - unidade-colorado.lnk')
     assert.equal(atalho.tipoMime, 'application/zip')
     assert.ok(lerAtalho(atalho).includes(Buffer.from(`"${origem}/unidade-colorado"`, 'utf16le')))
     assert.deepEqual(Buffer.from(atalho.conteudo), lerDownload(atalho))
@@ -24,11 +24,11 @@ for (const origem of ['http://10.1.140.15:5173', 'https://cnutri.empresa.local']
 }
 
 test('edição do endereço salva um atalho novo sem incluir sessão ou parâmetros da administração', () => {
-  const anterior = criarAtalhoUnidade(unidade, 'https://cnutri.empresa.local/admin?token=nao-compartilhar#unidades')
-  const atualizado = criarAtalhoUnidade({ ...unidade, codigo_slug: 'unidade-colorado-nova' }, 'https://cnutri.empresa.local')
-  assert.equal(anterior.url, 'https://cnutri.empresa.local/unidade-colorado')
-  assert.equal(atualizado.url, 'https://cnutri.empresa.local/unidade-colorado-nova')
-  assert.equal(atualizado.nomeArquivo, 'Cnutri - unidade-colorado-nova.zip')
+  const anterior = criarAtalhoUnidade(unidade, 'https://demeter.empresa.local/admin?token=nao-compartilhar#unidades')
+  const atualizado = criarAtalhoUnidade({ ...unidade, codigo_slug: 'unidade-colorado-nova' }, 'https://demeter.empresa.local')
+  assert.equal(anterior.url, 'https://demeter.empresa.local/unidade-colorado')
+  assert.equal(atualizado.url, 'https://demeter.empresa.local/unidade-colorado-nova')
+  assert.equal(atualizado.nomeArquivo, 'Deméter - unidade-colorado-nova.zip')
   assert.doesNotMatch(textoAtalho(anterior), /admin|token|nao-compartilhar|#|\?/)
 })
 
@@ -41,9 +41,9 @@ test('não gera download para rascunho, unidade inativa ou endereço inválido',
 })
 
 test('atalho usa o servidor da instalação mesmo quando a TI acessa por localhost', () => {
-  const atalho = criarAtalhoUnidade(unidade, 'http://localhost:5173/admin', 'https://ceres.exemplo.local:8443')
-  assert.equal(atalho.url, 'https://ceres.exemplo.local:8443/unidade-colorado')
-  assert.ok(lerAtalho(atalho).includes(Buffer.from('"https://ceres.exemplo.local:8443/unidade-colorado"', 'utf16le')))
+  const atalho = criarAtalhoUnidade(unidade, 'http://localhost:5173/admin', 'https://demeter.exemplo.local:8443')
+  assert.equal(atalho.url, 'https://demeter.exemplo.local:8443/unidade-colorado')
+  assert.ok(lerAtalho(atalho).includes(Buffer.from('"https://demeter.exemplo.local:8443/unidade-colorado"', 'utf16le')))
 })
 
 test('atalho nativo delega a URL ao Windows sem fixar navegador, unidade de disco ou credenciais', () => {
@@ -58,7 +58,7 @@ test('atalho nativo delega a URL ao Windows sem fixar navegador, unidade de disc
 })
 
 test('endereço configurado inválido não distribui um atalho para outro destino', () => {
-  for (const endereco of ['javascript:alert(1)', 'https://usuario:senha@ceres.exemplo.local', 'https://ceres.exemplo.local/admin', 'https://ceres.exemplo.local?token=teste']) {
+  for (const endereco of ['javascript:alert(1)', 'https://usuario:senha@demeter.exemplo.local', 'https://demeter.exemplo.local/admin', 'https://demeter.exemplo.local?token=teste']) {
     assert.equal(criarAtalhoUnidade(unidade, 'http://localhost:5173', endereco), null)
   }
 })

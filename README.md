@@ -1,14 +1,11 @@
-# Ceres Care — Gestão de Nutrição
+# Deméter — Gestão de Nutrição
 
 **Nutrição e cuidado em cada etapa.**
 
-Plataforma multifilial para solicitação, preparo, entrega e auditoria de dietas hospitalares,
-anteriormente chamada Cnutri. A identidade pública usa **Ceres Care** na interface, na aba
-do navegador, nos relatórios e nos arquivos exportados. O ícone e a paleta azul são mantidos.
-
-Os endereços já distribuídos, as pastas, o repositório Git, as configurações privadas e os
-identificadores de integração continuam compatíveis. A alteração do nome não muda o DNS
-reservado pela TI. Consulte a [linguagem visual](UI-ACOLHIMENTO.md).
+Plataforma multifilial para solicitação, preparo, entrega e auditoria de dietas hospitalares.
+O **Deméter** reúne os formulários, a operação da cozinha e os relatórios em uma interface
+acolhedora, com identidade azul e a mensagem **Nutrição e cuidado em cada etapa.**
+Consulte a [linguagem visual](UI-ACOLHIMENTO.md).
 
 **Stack:** FastAPI (Python) · React + Vite · PostgreSQL 16 · WebSockets · Impressão ESC/POS · Docker
 
@@ -36,12 +33,12 @@ O [módulo de assinatura](MODULO-ASSINATURA.md) permanece disponível para futur
 
 ## Estrutura do projeto
 
-Pasta única de desenvolvimento nesta estação: `C:\Users\Suporte\Documents\Projeto Cnutri`.
-Ela contém o repositório `Markyto84/Cnutri`, com o histórico Git e as correções locais mais recentes.
-Os caminhos anteriores do LM Studio e da cópia do Codex apontam para esta mesma pasta.
+Pasta única de desenvolvimento nesta estação: `C:\Users\Suporte\Documents\Projeto Demeter`.
+Ela contém o repositório `Markyto84/Demeter`, com o histórico Git e as correções locais mais recentes.
+As alterações em desenvolvimento ficam em worktrees Git separados desta instalação.
 
 ```
-Projeto Cnutri/
+Projeto Demeter/
 ├── backend/                  # API FastAPI (app/), Dockerfile
 ├── frontend/                 # SPA React (src/), Dockerfile + nginx.conf
 ├── configuracoes/            # Cópias versionadas dos esquemas de formulário
@@ -98,12 +95,12 @@ Na pasta do projeto no servidor, crie um `.env`:
 ```bash
 cd /opt/projeto-dietas-hospitalares
 umask 077
-cnutri_admin_inicial=''
-until [[ "$cnutri_admin_inicial" =~ [A-Z] && "$cnutri_admin_inicial" =~ [0-9] && "$cnutri_admin_inicial" =~ [^[:alnum:][:space:]] ]]; do
-  cnutri_admin_inicial=$(openssl rand -base64 9)
+demeter_admin_inicial=''
+until [[ "$demeter_admin_inicial" =~ [A-Z] && "$demeter_admin_inicial" =~ [0-9] && "$demeter_admin_inicial" =~ [^[:alnum:][:space:]] ]]; do
+  demeter_admin_inicial=$(openssl rand -base64 9)
 done
-printf 'POSTGRES_PASSWORD=%s\nJWT_SECRET=%s\nADMIN_INICIAL_SENHA=%s\n' "$(openssl rand -hex 24)" "$(openssl rand -hex 48)" "$cnutri_admin_inicial" > .env
-unset cnutri_admin_inicial
+printf 'POSTGRES_PASSWORD=%s\nJWT_SECRET=%s\nADMIN_INICIAL_SENHA=%s\n' "$(openssl rand -hex 24)" "$(openssl rand -hex 48)" "$demeter_admin_inicial" > .env
+unset demeter_admin_inicial
 chmod 600 .env
 ```
 
@@ -132,7 +129,7 @@ diretamente, sem página de seleção de unidade. O endereço principal apenas o
 o atalho fornecido pela TI, sem escolher ou redirecionar para uma unidade.
 Em **Administração → Unidades**, use **Baixar atalho (.url)** na unidade desejada.
 Após criar ou editar uma unidade, o painel também mostra o endereço salvo e seu download.
-O arquivo usa o domínio/IP, protocolo e porta do endereço pelo qual a TI acessou o Ceres Care.
+O arquivo usa o domínio/IP, protocolo e porta do endereço pelo qual a TI acessou o Deméter.
 Novos endereços de unidade precisam incluir uma letra e não podem usar rotas reservadas,
 como `login` ou `admin`.
 
@@ -235,7 +232,7 @@ O monitoramento e o teste de recuperação local do banco foram implementados em
 Com Docker Desktop, Python 3.12 e Node.js instalados, execute na pasta do projeto:
 
 ```powershell
-Set-Location 'C:\Users\Suporte\Documents\Projeto Cnutri'
+Set-Location 'C:\Users\Suporte\Documents\Projeto Demeter'
 .\start.ps1
 ```
 
@@ -493,7 +490,7 @@ Set-Location backend
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 ```
 
-A suíte inclui testes que exigem `CNUTRI_TEST_POSTGRES_URL` apontando explicitamente
+A suíte inclui testes que exigem `DEMETER_TEST_POSTGRES_URL` apontando explicitamente
 para um banco de testes PostgreSQL com permissão para criar schemas. Usam schemas exclusivos,
 revertidos ou removidos ao terminar: migrações e verificações de concorrência de
 senhas, repetição de pedidos, consumo da fila e status durante o envio da etiqueta. Sem a
@@ -525,7 +522,7 @@ As impressoras são simuladas nesses testes; a saída em papel deve ser validada
 
 Para configurar o certificado da TI na instalação Windows atual, use
 `configurar-https.ps1`. No servidor Linux/Docker, há o complemento
-`docker-compose.https.yml`. A ativação depende do nome DNS reservado ao Ceres Care,
+`docker-compose.https.yml`. A ativação depende do nome DNS reservado ao Deméter,
 certificado válido para esse nome e chave privada. Veja [HTTPS.md](HTTPS.md)
 para preparação, ativação, renovação e validações. Os acessos atuais são mantidos
 até que a configuração seja aplicada.
@@ -539,7 +536,7 @@ QR Codes e recuperação de backup no servidor de destino.
 
 A área Administração → Credenciais permite escolher conta local ou AD local do
 Windows Server. A senha AD é validada no domínio; perfil e unidades continuam
-controlados no Ceres Care. A integração vem desativada e exige LDAPS com certificado
+controlados no Deméter. A integração vem desativada e exige LDAPS com certificado
 válido e HTTPS no acesso à aplicação. Usuários e senhas atuais são preservados.
 Veja [configuração, ativação e limites das sessões AD](ACTIVE-DIRECTORY.md).
 

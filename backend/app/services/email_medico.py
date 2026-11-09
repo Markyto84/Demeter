@@ -16,6 +16,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import undefer
 
 from ..core.config import settings
+from ..core.marca import NOME_APLICACAO
 from ..models.models import ConfiguracaoEmailUnidade, FormularioConfig
 from .endereco_email import normalizar_email
 from .impressora import ROTULOS_PADRAO, _formatar_valor
@@ -115,14 +116,14 @@ def compor_corpos(resumo):
     aviso = "Sua refeição saiu para entrega e está a caminho do local solicitado."
     instante = datetime.fromisoformat(resumo["pronto_em"]).astimezone(timezone(timedelta(hours=-3))).strftime("%d/%m/%Y às %H:%M")
     itens = [["Unidade", resumo["unidade"]], *resumo["itens"]]
-    texto = f"Cnutri · Pedido #{pedido}\n\n{saudacao}\n\n{aviso}\n\nResumo da sua solicitação\n"
+    texto = f"{NOME_APLICACAO} · Pedido #{pedido}\n\n{saudacao}\n\n{aviso}\n\nResumo da sua solicitação\n"
     texto += "\n".join(f"{rotulo}: {valor}" for rotulo, valor in itens)
     texto += f"\n\nSaída registrada em {instante} (horário de Brasília).\nCuidado em cada etapa, da solicitação à entrega.\n"
     linhas = "".join(f'<tr><th scope="row" style="padding:12px 16px;text-align:left;vertical-align:top;color:#475569;border-bottom:1px solid #e2e8f0;width:36%;font-weight:600">{escape(str(rotulo))}</th>'
         f'<td style="padding:12px 16px;color:#172b3a;border-bottom:1px solid #e2e8f0;word-break:break-word">{escape(str(valor)).replace(chr(10), "<br>")}</td></tr>' for rotulo, valor in itens)
-    html = f'''<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cnutri · Sua refeição está a caminho</title></head>
+    html = f'''<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{escape(NOME_APLICACAO)} · Sua refeição está a caminho</title></head>
 <body style="margin:0;padding:24px 12px;background:#edf5f8;font-family:Arial,Helvetica,sans-serif;color:#172b3a">
-<table role="presentation" width="100%" style="width:100%;max-width:600px;table-layout:fixed;margin:0 auto;border-collapse:collapse;background:white;border-radius:16px;overflow:hidden"><tr><td style="padding:24px;background:#0070AD;color:white"><p style="margin:0;font-size:26px;font-weight:bold">Cnutri</p><p style="margin:8px 0 0;font-size:14px">Cuidado em cada etapa</p></td></tr>
+<table role="presentation" width="100%" style="width:100%;max-width:600px;table-layout:fixed;margin:0 auto;border-collapse:collapse;background:white;border-radius:16px;overflow:hidden"><tr><td style="padding:24px;background:#0070AD;color:white"><p style="margin:0;font-size:26px;font-weight:bold">{escape(NOME_APLICACAO)}</p><p style="margin:8px 0 0;font-size:14px">Cuidado em cada etapa</p></td></tr>
 <tr><td style="padding:28px 24px 12px"><p style="margin:0 0 12px">{escape(saudacao)}</p><h1 style="margin:0 0 14px;font-size:26px;line-height:1.3;color:#0070AD">Sua refeição está a caminho.</h1><p style="margin:0;line-height:1.6">{aviso}</p><p style="margin:20px 0 12px;font-weight:bold">Resumo da sua solicitação · Pedido #{pedido}</p></td></tr>
 <tr><td style="padding:0 24px"><table width="100%" aria-label="Resumo da refeição" style="width:100%;table-layout:fixed;border-collapse:collapse;font-size:14px;line-height:1.5;background:#f7fafc">{linhas}</table></td></tr>
 <tr><td style="padding:20px 24px 28px;font-size:12px;line-height:1.6;color:#526574">Saída registrada em {instante} (horário de Brasília).<br>Cuidado em cada etapa, da solicitação à entrega.</td></tr></table></body></html>'''
@@ -131,11 +132,11 @@ def compor_corpos(resumo):
 
 def compor_mensagem(conexao, destinatario, resumo, mensagem_id):
     mensagem = EmailMessage(policy=SMTP)
-    mensagem["From"] = f'Cnutri <{normalizar_email(conexao.remetente)}>'
+    mensagem["From"] = f'{NOME_APLICACAO} <{normalizar_email(conexao.remetente)}>'
     if conexao.endereco_resposta:
         mensagem["Reply-To"] = normalizar_email(conexao.endereco_resposta)
     mensagem["To"] = normalizar_email(destinatario)
-    mensagem["Subject"] = f'Cnutri · Sua refeição está a caminho · Pedido #{int(resumo["pedido_id"])}'
+    mensagem["Subject"] = f'{NOME_APLICACAO} · Sua refeição está a caminho · Pedido #{int(resumo["pedido_id"])}'
     mensagem["Message-ID"] = mensagem_id
     mensagem["Date"] = format_datetime(datetime.fromisoformat(resumo["pronto_em"]))
     texto, html = compor_corpos(resumo)

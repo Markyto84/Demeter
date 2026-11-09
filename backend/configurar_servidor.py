@@ -72,12 +72,12 @@ def configurar(raiz, endereco, certificados=None, *, alterar=False):
     endereco = normalizar_endereco_publico(endereco, permitir_local=False)
     partes = urlsplit(endereco)
     https = partes.scheme == "https"
-    pasta_tls = certificados or "/etc/ceres-care/tls"
+    pasta_tls = certificados or "/etc/demeter/tls"
     if not PurePosixPath(pasta_tls).is_absolute() or ".." in PurePosixPath(pasta_tls).parts or not re.fullmatch(r"/[a-zA-Z0-9_./-]+", pasta_tls):
         raise ValueError("Informe uma pasta Linux absoluta para os certificados, sem espaços ou parâmetros.")
     arquivo = raiz / "work/servidor.env"
     anterior = ler_configuracao(arquivo)
-    porta_http = anterior.get("CNUTRI_PORTA_HTTP", "80") if https else str(partes.port or 80)
+    porta_http = anterior.get("DEMETER_PORTA_HTTP", "80") if https else str(partes.port or 80)
     if not porta_http.isdigit() or not 1 <= int(porta_http) <= 65535:
         raise ValueError("A porta HTTP anterior é inválida; confira a configuração existente.")
     porta_http = str(int(porta_http))
@@ -85,10 +85,10 @@ def configurar(raiz, endereco, certificados=None, *, alterar=False):
     if https and porta_http == porta_https:
         raise ValueError("As portas HTTP e HTTPS precisam ser diferentes.")
     valores = {"URL_PUBLICA": endereco, "URL_RECEBIMENTO_PUBLICA": "${URL_PUBLICA}",
-        "CNUTRI_HOSTNAME": partes.hostname, "CNUTRI_PORTA_HTTP": porta_http,
-        "CNUTRI_PORTA_HTTPS": porta_https, "CNUTRI_HTTPS_ATIVO": "true" if https else "false",
-        "CNUTRI_TLS_DIR": pasta_tls}
-    conteudo = "# Configuração da instalação Ceres Care. Gerada pelo assistente local.\n"
+        "DEMETER_HOSTNAME": partes.hostname, "DEMETER_PORTA_HTTP": porta_http,
+        "DEMETER_PORTA_HTTPS": porta_https, "DEMETER_HTTPS_ATIVO": "true" if https else "false",
+        "DEMETER_TLS_DIR": pasta_tls}
+    conteudo = "# Configuração da instalação Deméter. Gerada pelo assistente local.\n"
     conteudo += "\n".join(f"{chave}={valor}" for chave, valor in valores.items()) + "\n"
     if anterior and anterior != valores and not alterar:
         raise ValueError("A instalação já possui um endereço. Use --alterar para preparar a mudança preservando as credenciais.")
@@ -102,7 +102,7 @@ def configurar(raiz, endereco, certificados=None, *, alterar=False):
         senha = senha_inicial()
         gravar_privado(ambiente, f"POSTGRES_PASSWORD={secrets.token_hex(24)}\nJWT_SECRET={secrets.token_urlsafe(64)}\nADMIN_INICIAL_SENHA={json.dumps(senha)}\n")
         preparar_email(raiz)
-        gravar_privado(credencial, f"Ceres Care — primeiro acesso de uma instalação nova\nUsuário: admin\nSenha temporária: {senha}\nA senha deve ser alterada no primeiro acesso. Este arquivo não redefine contas existentes.\n")
+        gravar_privado(credencial, f"Deméter — primeiro acesso de uma instalação nova\nUsuário: admin\nSenha temporária: {senha}\nA senha deve ser alterada no primeiro acesso. Este arquivo não redefine contas existentes.\n")
     if anterior != valores:
         if arquivo.exists():
             gravar_privado(raiz / "work/servidor.env.anterior", arquivo.read_text(encoding="utf-8"))

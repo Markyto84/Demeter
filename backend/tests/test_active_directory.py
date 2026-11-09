@@ -219,7 +219,7 @@ class AutenticacaoADTest(unittest.IsolatedAsyncioTestCase):
         self.bind.return_value = GUID_OUTRO
         self.assertEqual((await self.client.post("/api/auth/login", data={"username": "pessoa", "password": SENHA})).status_code, 401)
 
-    async def test_ad_sem_troca_de_senha_no_cnutri(self):
+    async def test_ad_sem_troca_de_senha_no_demeter(self):
         token = await self.entrar("pessoa")
         r = await self.client.post("/api/auth/senha", headers=token, json={"senha_atual": SENHA, "nova_senha": "Nova@123"})
         self.assertEqual(r.status_code, 403)

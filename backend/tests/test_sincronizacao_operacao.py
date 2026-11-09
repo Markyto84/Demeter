@@ -23,7 +23,7 @@ class SocketTeste:
     def __init__(self, token=None):
         self.mensagens = []
         self.fechado = None
-        self.scope = {"subprotocols": ["cnutri", token] if token else []}
+        self.scope = {"subprotocols": ["demeter", token] if token else []}
         self.recebidos = iter(["ping"])
 
     async def accept(self, **kwargs):
@@ -183,11 +183,11 @@ class SincronizacaoOperacaoTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(privado.mensagens, [{"evento": "pong"}])
 
 
-@unittest.skipUnless(os.environ.get("CNUTRI_TEST_POSTGRES_URL"), "Requer PostgreSQL de teste")
+@unittest.skipUnless(os.environ.get("DEMETER_TEST_POSTGRES_URL"), "Requer PostgreSQL de teste")
 class SincronizacaoOperacaoPostgresTest(SincronizacaoOperacaoTest):
     async def criar_engine(self):
         self.schema = "teste_sincronizacao_" + uuid4().hex
-        url = os.environ["CNUTRI_TEST_POSTGRES_URL"]
+        url = os.environ["DEMETER_TEST_POSTGRES_URL"]
         self.admin_engine = create_async_engine(url)
         async with self.admin_engine.begin() as c:
             await c.exec_driver_sql(f'CREATE SCHEMA "{self.schema}"')

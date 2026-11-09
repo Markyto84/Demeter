@@ -31,10 +31,10 @@ services:
       # Somente o nginx publica portas; ele substitui os cabeçalhos recebidos.
       FORWARDED_ALLOW_IPS: "*"
       CORS_ORIGINS: '["http://localhost","http://127.0.0.1"]'
-      BACKUP_RELATORIO_ARQUIVO: /var/lib/cnutri-monitoramento/ultimo_resultado.json
+      BACKUP_RELATORIO_ARQUIVO: /var/lib/demeter-monitoramento/ultimo_resultado.json
     volumes:
       # Apenas o resultado agregado; os dumps do banco não são montados na API.
-      - ./work/recuperacao:/var/lib/cnutri-monitoramento:ro
+      - ./work/recuperacao:/var/lib/demeter-monitoramento:ro
     depends_on:
       db:
         condition: service_healthy
@@ -44,7 +44,7 @@ services:
     build: ./frontend
     container_name: dietas-frontend
     ports:
-      - "${CNUTRI_PORTA_HTTP:-80}:80"
+      - "${DEMETER_PORTA_HTTP:-80}:80"
     depends_on:
       - backend
     restart: unless-stopped

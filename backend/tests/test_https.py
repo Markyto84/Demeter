@@ -28,8 +28,8 @@ def chave():
     return rsa.generate_private_key(public_exponent=65537, key_size=2048)
 
 
-def certificado(key, *, nomes=('cnutri.test',), inicio=-1, fim=24, ca=None, ca_key=None, uso=ExtendedKeyUsageOID.SERVER_AUTH, incluir_san=True):
-    nome = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, 'Autoridade fictícia Cnutri' if ca is None else 'Servidor fictício Cnutri')])
+def certificado(key, *, nomes=('demeter.test',), inicio=-1, fim=24, ca=None, ca_key=None, uso=ExtendedKeyUsageOID.SERVER_AUTH, incluir_san=True):
+    nome = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, 'Autoridade fictícia Deméter' if ca is None else 'Servidor fictício Deméter')])
     agora = datetime.now(timezone.utc)
     builder = (x509.CertificateBuilder().subject_name(nome).issuer_name(ca.subject if ca else nome)
         .public_key(key.public_key()).serial_number(x509.random_serial_number())
@@ -51,11 +51,11 @@ class CertificadoHttpsTest(unittest.TestCase):
         cls.cert = certificado(cls.key, ca=cls.ca, ca_key=cls.ca_key)
 
     def test_confere_dominio_san_validade_e_chave_sem_emitir_certificado(self):
-        self.assertEqual(validar_certificado('CNUTRI.TEST', self.cert, self.key)['dominio'], 'cnutri.test')
+        self.assertEqual(validar_certificado('DEMETER.TEST', self.cert, self.key)['dominio'], 'demeter.test')
         with self.assertRaises(ValueError):
             validar_certificado('outra.test', self.cert, self.key)
         with self.assertRaises(ValueError):
-            validar_certificado('cnutri.test', self.cert, chave())
+            validar_certificado('demeter.test', self.cert, chave())
 
     def test_recusa_ca_certificado_expirado_futuro_sem_san_ou_so_cliente(self):
         for cert in (self.ca,
@@ -64,17 +64,17 @@ class CertificadoHttpsTest(unittest.TestCase):
             certificado(self.key, ca=self.ca, ca_key=self.ca_key, incluir_san=False),
             certificado(self.key, ca=self.ca, ca_key=self.ca_key, uso=ExtendedKeyUsageOID.CLIENT_AUTH)):
             with self.assertRaises(ValueError):
-                validar_certificado('cnutri.test', cert, self.ca_key if cert is self.ca else self.key)
+                validar_certificado('demeter.test', cert, self.ca_key if cert is self.ca else self.key)
 
     def test_wildcard_cobre_apenas_um_nivel(self):
         cert = certificado(self.key, nomes=('*.empresa.local',), ca=self.ca, ca_key=self.ca_key)
-        validar_certificado('cnutri.empresa.local', cert, self.key)
-        for host in ('empresa.local', 'outro.cnutri.empresa.local', 'cnutri.outra.local'):
+        validar_certificado('demeter.empresa.local', cert, self.key)
+        for host in ('empresa.local', 'outro.demeter.empresa.local', 'demeter.outra.local'):
             with self.assertRaises(ValueError):
                 validar_certificado(host, cert, self.key)
 
     def test_rejeita_url_porta_caminho_e_injecao_no_dominio(self):
-        for valor in ('https://cnutri.test', 'cnutri.test:443', 'cnutri.test/abc', 'cnutri.test\nlocalhost', 'cnutri.test{admin}', '-abc.test'):
+        for valor in ('https://demeter.test', 'demeter.test:443', 'demeter.test/abc', 'demeter.test\nlocalhost', 'demeter.test{admin}', '-abc.test'):
             with self.assertRaises(ValueError):
                 normalizar_dominio(valor)
 
@@ -84,24 +84,24 @@ class CertificadoHttpsTest(unittest.TestCase):
             pfx = root / 'entrada.pfx'
             pfx.write_bytes(pkcs12.serialize_key_and_certificates(b'teste', self.key, self.cert,
                 [self.ca], serialization.BestAvailableEncryption(b'SenhaSomenteTeste')))
-            cfg = preparar('cnutri.test', pfx=pfx, senha=b'SenhaSomenteTeste', raiz=root)
+            cfg = preparar('demeter.test', pfx=pfx, senha=b'SenhaSomenteTeste', raiz=root)
             self.assertFalse((root / 'work/https/active.json').exists())
             self.assertIn('work', Path(cfg['chave']).parts)
             self.assertNotIn('SenhaSomenteTeste', Path(cfg['caddyfile']).read_text())
             self.assertEqual(len(x509.load_pem_x509_certificates(Path(cfg['certificado']).read_bytes())), 2)
             with self.assertRaises(ValueError):
-                preparar('cnutri.test', pfx=pfx, senha=b'errada', raiz=root)
+                preparar('demeter.test', pfx=pfx, senha=b'errada', raiz=root)
             publico = root / 'frontend/public'
             publico.mkdir(parents=True)
             with self.assertRaisesRegex(ValueError, 'fora da pasta do frontend'):
-                preparar('cnutri.test', pfx=publico / 'entrada.pfx', senha=b'SenhaSomenteTeste', raiz=root)
+                preparar('demeter.test', pfx=publico / 'entrada.pfx', senha=b'SenhaSomenteTeste', raiz=root)
 
     def test_configuracao_mantem_caminhos_e_cabecalhos_seguros(self):
-        texto = renderizar_caddy('cnutri.test', r'C:\Pasta com espaço\servidor.pem', r'C:\Pasta com espaço\chave.pem', r'C:\app\dist')
+        texto = renderizar_caddy('demeter.test', r'C:\Pasta com espaço\servidor.pem', r'C:\Pasta com espaço\chave.pem', r'C:\app\dist')
         self.assertIn('auto_https off', texto)
         self.assertIn('admin off', texto)
         self.assertIn('http://:80, http://:5173', texto)
-        self.assertIn('redir https://cnutri.test{uri} 308', texto)
+        self.assertIn('redir https://demeter.test{uri} 308', texto)
         self.assertNotIn('redir https://{host}', texto)
         self.assertIn('header_up X-Forwarded-Proto {scheme}', texto)
         self.assertIn('/ws/*', texto)
@@ -128,7 +128,7 @@ async def app_ficticio(scope, receive, send):
         await send({'type': 'websocket.close', 'code': 1000})
 
 
-@unittest.skipUnless(os.environ.get('CNUTRI_TEST_CADDY'), 'Requer Caddy de teste explicitamente indicado')
+@unittest.skipUnless(os.environ.get('DEMETER_TEST_CADDY'), 'Requer Caddy de teste explicitamente indicado')
 class GatewayHttpsTest(unittest.TestCase):
     def test_https_redirect_spa_api_certificados_e_websocket(self):
         with TemporaryDirectory() as temp:
@@ -141,26 +141,26 @@ class GatewayHttpsTest(unittest.TestCase):
             key_path.write_bytes(key.private_bytes(serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8, serialization.NoEncryption()))
             frontend = root / 'frontend'
             frontend.mkdir()
-            (frontend / 'index.html').write_text('<html>Cnutri fictício HTTPS</html>', encoding='utf-8')
+            (frontend / 'index.html').write_text('<html>Deméter fictício HTTPS</html>', encoding='utf-8')
             porta_api, porta_tls, porta_http, porta_antiga = (porta_livre() for _ in range(4))
             api = uvicorn.Server(uvicorn.Config(app_ficticio, host='127.0.0.1', port=porta_api, lifespan='off', log_level='error'))
             thread = threading.Thread(target=api.run, daemon=True)
             thread.start()
             cfg = root / 'Caddyfile'
-            cfg.write_text(renderizar_caddy('cnutri.test', cert_path, key_path, frontend,
+            cfg.write_text(renderizar_caddy('demeter.test', cert_path, key_path, frontend,
                 porta_https=porta_tls, portas_http=(porta_http, porta_antiga), upstream=f'127.0.0.1:{porta_api}', bind='127.0.0.1'), encoding='utf-8')
             contexto = ssl.create_default_context(cadata=ca.public_bytes(serialization.Encoding.PEM).decode())
 
-            def requisitar(caminho, contexto_tls=contexto, host_tls='cnutri.test'):
+            def requisitar(caminho, contexto_tls=contexto, host_tls='demeter.test'):
                 with socket.create_connection(('127.0.0.1', porta_tls), timeout=3) as raw:
                     with contexto_tls.wrap_socket(raw, server_hostname=host_tls) as sock:
-                        sock.sendall((f'GET {caminho} HTTP/1.1\r\nHost: cnutri.test:{porta_tls}\r\nX-Forwarded-Proto: http\r\nX-Forwarded-For: 8.8.8.8\r\nConnection: close\r\n\r\n').encode())
+                        sock.sendall((f'GET {caminho} HTTP/1.1\r\nHost: demeter.test:{porta_tls}\r\nX-Forwarded-Proto: http\r\nX-Forwarded-For: 8.8.8.8\r\nConnection: close\r\n\r\n').encode())
                         resposta = http.client.HTTPResponse(sock)
                         resposta.begin()
                         return resposta.status, resposta.read(), dict(resposta.getheaders())
 
             with (root / 'caddy.log').open('w', encoding='utf-8') as log:
-                processo = subprocess.Popen([os.environ['CNUTRI_TEST_CADDY'], 'run', '--config', str(cfg), '--adapter', 'caddyfile'], stdout=log, stderr=log)
+                processo = subprocess.Popen([os.environ['DEMETER_TEST_CADDY'], 'run', '--config', str(cfg), '--adapter', 'caddyfile'], stdout=log, stderr=log)
                 try:
                     prazo = time.monotonic() + 10
                     ultimo = None
@@ -190,14 +190,14 @@ class GatewayHttpsTest(unittest.TestCase):
                         conexao.request('GET', '/entregas/1?teste=1', headers={'Host': 'host-forjado.test'})
                         resposta = conexao.getresponse()
                         self.assertEqual(resposta.status, 308)
-                        self.assertEqual(resposta.getheader('Location'), f'https://cnutri.test:{porta_tls}/entregas/1?teste=1')
+                        self.assertEqual(resposta.getheader('Location'), f'https://demeter.test:{porta_tls}/entregas/1?teste=1')
                         conexao.close()
-                    for ctx, host in ((ssl.create_default_context(), 'cnutri.test'), (contexto, 'outro.test')):
+                    for ctx, host in ((ssl.create_default_context(), 'demeter.test'), (contexto, 'outro.test')):
                         with self.assertRaises(ssl.SSLError):
                             requisitar('/api/health', ctx, host)
 
                     async def websocket():
-                        async with connect(f'wss://cnutri.test:{porta_tls}/ws/operacao/1', host='127.0.0.1', port=porta_tls, ssl=contexto, proxy=None) as ws:
+                        async with connect(f'wss://demeter.test:{porta_tls}/ws/operacao/1', host='127.0.0.1', port=porta_tls, ssl=contexto, proxy=None) as ws:
                             await ws.send('mensagem fictícia')
                             self.assertEqual(await ws.recv(), 'mensagem fictícia')
                     asyncio.run(websocket())

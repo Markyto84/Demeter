@@ -197,7 +197,7 @@ class Pedido(Base):
     concluido_em: Mapped[datetime | None] = mapped_column(DateTime)
     chave_envio: Mapped[str | None] = mapped_column(String(36))
     hash_envio: Mapped[str | None] = mapped_column(String(64))
-    # Referência ao prontuário externo; não representa prescrição emitida pelo Cnutri.
+    # Referência ao prontuário externo; não representa prescrição emitida pelo Deméter.
     prescricao: Mapped[dict | None] = mapped_column(JSONType)
     versao: Mapped[int] = mapped_column(Integer, nullable=False, default=1, server_default="1")
     recebimento_qr: Mapped[bool] = column_property(select(RecebimentoQR.pedido_id).where(

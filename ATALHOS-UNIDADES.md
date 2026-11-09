@@ -3,8 +3,8 @@
 No painel de Administração → Unidades, **Baixar atalho (.zip)** gera um pacote contendo um atalho nativo do Windows, por exemplo:
 
 ```text
-Cnutri - unidade-havai.zip
-└── Cnutri - unidade-havai.lnk
+Deméter - unidade-havai.zip
+└── Deméter - unidade-havai.lnk
 ```
 
 Depois de baixar, extraia o `.lnk` e copie-o para a área de trabalho dos computadores da unidade. O atalho abre diretamente o formulário dessa unidade no navegador padrão configurado no Windows do destinatário. Não altera os padrões da máquina nem inclui usuário, senha, token ou sessão do administrador.

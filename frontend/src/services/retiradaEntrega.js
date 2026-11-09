@@ -1,4 +1,4 @@
-const CHAVE = 'cnutri-retirada-apos-login'
+const CHAVE = 'demeter-retirada-apos-login'
 
 export function etapaEntrega(pedido) {
   return pedido.status === 'PRONTO' && (pedido.retirada || pedido.em_entrega) ? 'EM_ENTREGA' : pedido.status

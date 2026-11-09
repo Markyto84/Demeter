@@ -32,27 +32,27 @@ class DestinoRecuperacaoTest(unittest.TestCase):
         self.assertNotEqual(normalizar_indice(a), normalizar_indice(b.replace("UNIQUE ", "")))
 
     def test_destino_nao_pode_ser_banco_real_nome_arbitrario_ou_prefixo_incompleto(self):
-        for nome in ("dietas", "postgres", "cnutri_restore_dietas", "cnutri_restore_1234", 'x"; DROP DATABASE dietas;'):
+        for nome in ("dietas", "postgres", "demeter_restore_dietas", "demeter_restore_1234", 'x"; DROP DATABASE dietas;'):
             with self.assertRaises(ValueError):
                 validar_alvo(nome, "dietas")
-        correto = "cnutri_restore_" + uuid4().hex
+        correto = "demeter_restore_" + uuid4().hex
         validar_alvo(correto, "dietas")
         with self.assertRaises(ValueError):
             validar_alvo(correto, correto)
 
 
-@unittest.skipUnless(os.environ.get("CNUTRI_TEST_POSTGRES_URL") and os.environ.get("CNUTRI_TEST_RECUPERACAO_CONTAINER"),
+@unittest.skipUnless(os.environ.get("DEMETER_TEST_POSTGRES_URL") and os.environ.get("DEMETER_TEST_RECUPERACAO_CONTAINER"),
     "Requer PostgreSQL e contêiner de teste explicitamente indicados")
 class RecuperacaoPostgresTest(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
-        self.container = os.environ["CNUTRI_TEST_RECUPERACAO_CONTAINER"]
-        base = make_url(os.environ["CNUTRI_TEST_POSTGRES_URL"])
-        self.origem = "cnutri_source_test_" + uuid4().hex
+        self.container = os.environ["DEMETER_TEST_RECUPERACAO_CONTAINER"]
+        base = make_url(os.environ["DEMETER_TEST_POSTGRES_URL"])
+        self.origem = "demeter_source_test_" + uuid4().hex
         self.url = base.set(database=self.origem)
         self.comandos = ComandosPostgres(self.container, base.username)
         await self.comandos.executar("createdb", ["--template=template0", self.origem])
         self.engine = create_async_engine(self.url)
-        self.pasta = TemporaryDirectory(prefix="cnutri-recuperacao-")
+        self.pasta = TemporaryDirectory(prefix="demeter-recuperacao-")
         async with self.engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
         sessoes = async_sessionmaker(self.engine, expire_on_commit=False)
@@ -86,7 +86,7 @@ class RecuperacaoPostgresTest(unittest.IsolatedAsyncioTestCase):
 
     async def asyncTearDown(self):
         await self.engine.dispose()
-        assert re.fullmatch(r"cnutri_source_test_[0-9a-f]{32}", self.origem)
+        assert re.fullmatch(r"demeter_source_test_[0-9a-f]{32}", self.origem)
         await self.comandos.executar("dropdb", [self.origem])
         self.pasta.cleanup()
 
@@ -96,7 +96,7 @@ class RecuperacaoPostgresTest(unittest.IsolatedAsyncioTestCase):
     async def conferir_origem_e_limpeza(self):
         async with self.engine.connect() as conn:
             self.assertEqual(await resumir_tabelas(conn), self.antes)
-            pendentes = (await conn.execute(text("SELECT datname FROM pg_database WHERE datname LIKE 'cnutri_restore_%'"))).all()
+            pendentes = (await conn.execute(text("SELECT datname FROM pg_database WHERE datname LIKE 'demeter_restore_%'"))).all()
             self.assertEqual(pendentes, [])
 
     async def test_restaura_todos_dados_estruturas_sequencias_formularios_e_assinaturas(self):

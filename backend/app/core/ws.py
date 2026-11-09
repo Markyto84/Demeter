@@ -22,7 +22,7 @@ class ConnectionManager:
         await ws.accept()
         self.publicos[filial_id].append(ws)
 
-    async def conectar(self, filial_id: int, ws: WebSocket, usuario_id: int, subprotocolo: str = "cnutri") -> None:
+    async def conectar(self, filial_id: int, ws: WebSocket, usuario_id: int, subprotocolo: str = "demeter") -> None:
         await ws.accept(subprotocol=subprotocolo)
         self.ativos[filial_id].append(ws)
         self.usuarios[ws] = usuario_id

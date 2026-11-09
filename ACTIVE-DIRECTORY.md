@@ -1,16 +1,16 @@
 # Autenticação pelo Active Directory
 
 A TI pode cadastrar uma **conta local** ou um vínculo com o **AD local do Windows
-Server** em Administração → Credenciais. O nome de usuário do Cnutri continua
+Server** em Administração → Credenciais. O nome de usuário do Deméter continua
 sendo o nome digitado no login. Para contas AD, a senha é a senha da rede.
-O perfil e as unidades autorizadas são definidos no Cnutri. Ser usuário do domínio
-ou pertencer a um grupo administrativo do Windows não concede acesso ao Cnutri.
+O perfil e as unidades autorizadas são definidos no Deméter. Ser usuário do domínio
+ou pertencer a um grupo administrativo do Windows não concede acesso ao Deméter.
 
 A integração vem **desativada**. Os usuários existentes continuam locais, com as
 mesmas senhas, perfis, vínculos e sessões. Nenhuma conta é convertida automaticamente.
 Prepare os vínculos e ative o AD somente após a TI validar o servidor e o HTTPS.
 
-## Configuração no servidor do Cnutri
+## Configuração no servidor do Deméter
 
 Defina estas variáveis no ambiente privado do **backend**, fora do Git. Nomes e
 caminhos abaixo são exemplos; substitua pelos dados fornecidos pela TI:
@@ -22,7 +22,7 @@ AD_SERVIDOR=dc01.empresa.local
 # Opcional: por padrão, é DC=empresa,DC=local, derivado do domínio.
 AD_BASE_DN=DC=empresa,DC=local
 # Opcional se a CA já estiver no repositório de confiança do servidor.
-AD_CA_CERTIFICADO=C:/Cnutri/certificados/ca-corporativa.pem
+AD_CA_CERTIFICADO=C:/Demeter/certificados/ca-corporativa.pem
 AD_TIMEOUT_SEGUNDOS=5
 AD_SESSAO_MINUTOS=30
 ```
@@ -39,17 +39,17 @@ somente por **LDAPS na porta 636**, com validação obrigatória de cadeia e nom
 certificado. Não existe opção para ignorar certificado ou usar LDAP sem TLS.
 Libere a comunicação do backend para o controlador e confirme a confiança na CA.
 
-O Cnutri usa o próprio usuário no bind e na consulta do `objectGUID`; **não é
+O Deméter usa o próprio usuário no bind e na consulta do `objectGUID`; **não é
 necessária uma conta de serviço ou senha administrativa do domínio**. A TI deve
 validar que os usuários podem ler `userPrincipalName`, `objectGUID` e
 `userAccountControl` no escopo configurado. Falhas de consulta impedem o login.
-O Cnutri não altera o diretório e não segue referrals para outros servidores.
+O Deméter não altera o diretório e não segue referrals para outros servidores.
 
 ## HTTPS e ativação
 
-Antes de mudar `AD_HABILITADO` para `true`, publique o Cnutri por **HTTPS**, com
+Antes de mudar `AD_HABILITADO` para `true`, publique o Deméter por **HTTPS**, com
 redirecionamento do endereço HTTP antes da tela de login. A proteção deve cobrir
-os dois trechos: navegador → Cnutri e Cnutri → AD. A API rejeita login AD por HTTP.
+os dois trechos: navegador → Deméter e Deméter → AD. A API rejeita login AD por HTTP.
 O Vite de desenvolvimento e o nginx sobrescrevem `X-Forwarded-Proto` com o
 protocolo real; um cabeçalho fornecido pelo cliente não libera a autenticação AD.
 
@@ -73,26 +73,26 @@ políticas corporativas de autenticação.
 1. Crie ou edite uma credencial e selecione **Active Directory (AD)**.
 2. Informe **Usuário no AD** como UPN completo, por exemplo `maria@empresa.local`.
    Use o UPN real, que pode ter um sufixo diferente do domínio DNS.
-3. Defina o nome de usuário do Cnutri, nome de exibição, perfil e unidades.
+3. Defina o nome de usuário do Deméter, nome de exibição, perfil e unidades.
 4. Salve. Não informe nem copie a senha da rede para o cadastro.
-5. Com a integração ativa e HTTPS, entre com o nome do Cnutri e a senha do AD.
+5. Com a integração ativa e HTTPS, entre com o nome do Deméter e a senha do AD.
 
 O primeiro login válido fixa o `objectGUID` da conta. Uma conta apagada e recriada
-com o mesmo UPN não herda o acesso anterior. Alterar apenas perfil, nome do Cnutri
+com o mesmo UPN não herda o acesso anterior. Alterar apenas perfil, nome do Deméter
 ou unidades preserva esse vínculo. A TI pode mudar o UPN no cadastro para vincular
 outra identidade; essa ação encerra as sessões atuais e exige nova autenticação.
-Cada UPN e cada GUID podem pertencer a apenas uma credencial do Cnutri.
+Cada UPN e cada GUID podem pertencer a apenas uma credencial do Deméter.
 
 Senha inválida, expirada ou bloqueio do AD impedem nova autenticação. Não há
 fallback automático para senha local quando o domínio está indisponível. A senha
 recebida é utilizada somente durante a requisição e não é persistida. As contas
-AD não usam a política local de 8–12 caracteres e não trocam senha pelo Cnutri.
+AD não usam a política local de 8–12 caracteres e não trocam senha pelo Deméter.
 
 Sessões AD duram no máximo 30 minutos por padrão, limitadas também pela duração
 geral configurada. O estado da conta no AD é reavaliado em cada login, **não a
 cada requisição da sessão já aberta**. Desativar uma conta no AD bloqueia novos
 logins; a sessão já emitida pode durar até expirar. Para corte imediato, desative
-a credencial no Cnutri, o que revoga as sessões e encerra os canais privados.
+a credencial no Deméter, o que revoga as sessões e encerra os canais privados.
 Desativar a integração também invalida o uso dos tokens AD nas APIs protegidas.
 
 Conserve ao menos um **administrador local ativo** para contingência. O sistema

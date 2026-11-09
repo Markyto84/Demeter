@@ -3,7 +3,7 @@
 set -eu
 VERSAO='__VERSAO__'
 SHA_ESPERADO='__PAYLOAD_SHA256__'
-DESTINO=/opt/ceres-care
+DESTINO=/opt/demeter
 MODO=instalar
 ENDERECO=''
 CERTIFICADOS=''
@@ -23,9 +23,9 @@ while [ "$#" -gt 0 ]; do
       ;;
     --verificar) MODO=verificar; shift ;;
     --ajuda|--help|-h)
-      printf '%s\n' "Ceres Care $VERSAO — instalador Linux x86_64" \
-        'Uso: sudo sh arquivo.run [--destino /opt/ceres-care] [--endereco http://IP:porta]' \
-        'HTTPS: acrescentar --certificados /etc/ceres-care/tls' \
+      printf '%s\n' "Deméter $VERSAO — instalador Linux x86_64" \
+        'Uso: sudo sh arquivo.run [--destino /opt/demeter] [--endereco http://IP:porta]' \
+        'HTTPS: acrescentar --certificados /etc/demeter/tls' \
         'Somente conferir: sh arquivo.run --verificar' \
         'Somente extrair: sh arquivo.run --extrair /pasta/nova' \
         'Requer Docker Engine e plugin Docker Compose já instalados no servidor.'
@@ -38,11 +38,11 @@ done
 for programa in awk tail sha256sum tar gzip; do
   command -v "$programa" >/dev/null 2>&1 || falhar "Componente Linux ausente: $programa."
 done
-LINHA=$(awk '/^__CERES_CARE_ARQUIVO__$/ { print NR + 1; exit }' "$0")
+LINHA=$(awk '/^__DEMETER_ARQUIVO__$/ { print NR + 1; exit }' "$0")
 [ -n "$LINHA" ] || falhar 'Pacote sem conteúdo de instalação.'
 SHA_ATUAL=$(tail -n "+$LINHA" "$0" | sha256sum | awk '{print $1}')
 [ "$SHA_ATUAL" = "$SHA_ESPERADO" ] || falhar 'Falha de integridade: copie novamente o instalador original.'
-printf '%s\n' "Ceres Care $VERSAO: integridade do pacote conferida."
+printf '%s\n' "Deméter $VERSAO: integridade do pacote conferida."
 [ "$MODO" != verificar ] || exit 0
 
 [ "$(uname -s)" = Linux ] || falhar 'Este instalador requer um servidor Linux.'
@@ -57,9 +57,9 @@ if [ "$MODO" = instalar ]; then
   command -v docker >/dev/null 2>&1 || falhar 'Instale Docker Engine e o plugin Docker Compose antes de executar o instalador.'
   docker info >/dev/null 2>&1 || falhar 'O Docker não está respondendo ou o usuário não tem acesso. Confira o serviço e as permissões.'
   docker compose version >/dev/null 2>&1 || falhar 'O plugin Docker Compose não está disponível.'
-  EXISTENTES=$(docker ps -aq --filter label=com.docker.compose.project=ceres-care)
-  VOLUMES=$(docker volume ls -q --filter label=com.docker.compose.project=ceres-care)
-  [ -z "$EXISTENTES$VOLUMES" ] || falhar 'Já existe uma instalação ou banco do projeto ceres-care neste Docker. Use o procedimento de atualização/migração da TI.'
+  EXISTENTES=$(docker ps -aq --filter label=com.docker.compose.project=demeter)
+  VOLUMES=$(docker volume ls -q --filter label=com.docker.compose.project=demeter)
+  [ -z "$EXISTENTES$VOLUMES" ] || falhar 'Já existe uma instalação ou banco do projeto demeter neste Docker. Use o procedimento de atualização/migração da TI.'
 fi
 
 umask 077
@@ -82,4 +82,4 @@ sh "$DESTINO/servidor.sh" iniciar
 printf '%s\n' "Instalação concluída. Consulte $DESTINO/work/credencial-inicial.txt no servidor para o primeiro acesso."
 printf '%s\n' 'A homologação da rede, dos dispositivos e das impressoras deve ser concluída pela TI.'
 exit 0
-__CERES_CARE_ARQUIVO__
+__DEMETER_ARQUIVO__

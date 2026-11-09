@@ -1,4 +1,4 @@
-const nomePrincipal = 'Cnutri'
+const nomePrincipal = 'Deméter'
 const complemento = ''
 
 export const MARCA = Object.freeze({
@@ -6,5 +6,5 @@ export const MARCA = Object.freeze({
   nomePrincipal,
   complemento,
   assinatura: 'Nutrição e cuidado em cada etapa.',
-  prefixoArquivos: 'cnutri',
+  prefixoArquivos: 'demeter',
 })

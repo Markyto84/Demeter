@@ -49,19 +49,19 @@ def preparar_conteudo(raiz, destino, versao):
         anterior = f"    build: ./{servico}"
         if compose.count(anterior) != 1:
             raise ValueError("A estrutura Compose mudou; revise o gerador antes de distribuir.")
-        compose = compose.replace(anterior, f"    image: ceres-care/{servico}:{versao}\n    pull_policy: never")
+        compose = compose.replace(anterior, f"    image: demeter/{servico}:{versao}\n    pull_policy: never")
     compose = compose.replace("    image: postgres:16-alpine", "    image: postgres:16-alpine\n    pull_policy: never")
     compose = re.sub(r"^    container_name: .+\n", "", compose, flags=re.MULTILINE)
     if re.search(r"^\s*build:", compose, re.MULTILINE):
         raise ValueError("A distribuição não pode depender de compilação no destino.")
-    (destino / "docker-compose.prod.yml").write_text("name: ceres-care\n\n" + compose, encoding="utf-8", newline="\n")
+    (destino / "docker-compose.prod.yml").write_text("name: demeter\n\n" + compose, encoding="utf-8", newline="\n")
     leia = (raiz / "infra/distribuicao/LEIA-ME.md").read_text(encoding="utf-8").replace("__VERSAO__", versao)
     (destino / "LEIA-ME.md").write_text(leia, encoding="utf-8", newline="\n")
 
 
 def gerar_run(conteudo, saida, versao, *, revisao, imagens):
     versao_valida(versao)
-    manifesto = {"produto": "Ceres Care", "versao": versao, "plataforma": "linux/amd64",
+    manifesto = {"produto": "Deméter", "versao": versao, "plataforma": "linux/amd64",
         "gerado_em_utc": datetime.now(timezone.utc).isoformat(), "revisao_git": revisao,
         "imagens": imagens, "arquivos": {}}
     for arquivo in sorted(conteudo.rglob("*")):
@@ -104,14 +104,14 @@ def principal():
     parser.add_argument("--sem-compilar", action="store_true", help="Usar imagens locais já compiladas desta versão")
     args = parser.parse_args()
     versao = versao_valida(args.versao)
-    saida = args.saida.resolve() / f"ceres-care-{versao}-linux-amd64.run"
+    saida = args.saida.resolve() / f"demeter-{versao}-linux-amd64.run"
     if saida.exists():
         raise SystemExit("Saída já existente; escolha outra pasta ou versão.")
     for servico in ("backend", "frontend"):
         if not args.sem_compilar:
             print(f"Compilando {servico} para Linux x86_64...", flush=True)
-            subprocess.run(["docker", "build", "--platform", "linux/amd64", "-t", f"ceres-care/{servico}:{versao}", str(ROOT / servico)], check=True)
-    tags = [f"ceres-care/backend:{versao}", f"ceres-care/frontend:{versao}", "postgres:16-alpine", "python:3.12-slim"]
+            subprocess.run(["docker", "build", "--platform", "linux/amd64", "-t", f"demeter/{servico}:{versao}", str(ROOT / servico)], check=True)
+    tags = [f"demeter/backend:{versao}", f"demeter/frontend:{versao}", "postgres:16-alpine", "python:3.12-slim"]
     imagens = {}
     for tag in tags:
         dados = json.loads(subprocess.check_output(["docker", "image", "inspect", tag], text=True))[0]

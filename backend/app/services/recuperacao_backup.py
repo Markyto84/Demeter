@@ -23,7 +23,7 @@ from .validacao_pedidos import validar_esquema
 
 
 def validar_alvo(nome, origem):
-    if nome == origem or not re.fullmatch(r"cnutri_restore_[0-9a-f]{32}", nome):
+    if nome == origem or not re.fullmatch(r"demeter_restore_[0-9a-f]{32}", nome):
         raise ValueError("Destino de restauração inválido")
 
 
@@ -155,7 +155,7 @@ async def recuperar_e_conferir(url, container, pasta_backup, progresso=None):
     url = make_url(url)
     if url.drivername != "postgresql+asyncpg" or not url.database or not url.username:
         raise ValueError("Requer PostgreSQL/asyncpg configurado")
-    alvo = "cnutri_restore_" + uuid4().hex
+    alvo = "demeter_restore_" + uuid4().hex
     validar_alvo(alvo, url.database)
     comandos = ComandosPostgres(container, url.username)
     origem_engine = create_async_engine(url)
@@ -163,7 +163,7 @@ async def recuperar_e_conferir(url, container, pasta_backup, progresso=None):
     criado = removido = False
     inicio = datetime.now(timezone.utc).isoformat()
     relogio = time.monotonic()
-    arquivo = pasta_backup / ("cnutri-backup-" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid4().hex[:8] + ".dump")
+    arquivo = pasta_backup / ("demeter-backup-" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid4().hex[:8] + ".dump")
     etapa = "origem"
     resultado = {"estado": "EM_ANDAMENTO", "iniciado_em": inicio, "temporario_removido": False}
     if progresso:

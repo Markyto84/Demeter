@@ -1,4 +1,4 @@
-# Ceres Care — configuração inicial do servidor Linux
+# Deméter — configuração inicial do servidor Linux
 
 O assistente define um endereço público único para esta instalação: protocolo,
 IP ou DNS e porta. API e WebSocket acompanham o endereço aberto no navegador;
@@ -82,8 +82,8 @@ Disponibilize `servidor.pem` (certificado e intermediários) e `chave.pem` em um
 pasta privada no Linux, com DNS e cadeia de confiança configurados pela TI:
 
 ```sh
-sh ./servidor.sh configurar --endereco https://cnutri.preventsenior.com.br \
-  --certificados /etc/ceres-care/tls --alterar
+sh ./servidor.sh configurar --endereco https://demeter.preventsenior.com.br \
+  --certificados /etc/demeter/tls --alterar
 sh ./servidor.sh validar
 sh ./servidor.sh iniciar
 ```

@@ -1,4 +1,4 @@
-# Cnutri — melhorias 1 a 3 do review
+# Deméter — melhorias 1 a 3 do review
 
 Atualização em 27/10/2026: a operação da cozinha passou a dispensar login por solicitação
 do usuário. A regra vigente está em [COZINHA-SEM-LOGIN.md](COZINHA-SEM-LOGIN.md);
@@ -62,6 +62,6 @@ O frontend usa `required` também em texto longo, associa rótulos aos controles
 
 Testes automatizados cobrem autorização por perfil/unidade, atribuição da entrega, senha temporária, revogação de sessões, tentativas de autenticação, rotação idempotente e validação dos formulários. São 59 testes do backend, incluindo a migração PostgreSQL em schema temporário com rollback e dois testes de redefinição concorrente de senha em schemas exclusivos removidos ao final; os testes funcionais usam SQLite e dados fictícios. Não há impressão física nos testes.
 
-Execute no backend: `python -m unittest discover -s tests -v` (dependências de teste: `httpx` e `aiosqlite`). Para incluir a migração, configure `CNUTRI_TEST_POSTGRES_URL` para um PostgreSQL de teste. No frontend: `npm test` (quatro testes), `npm run build`, `npm run lint`. A compilação passou; o lint mantém dois avisos anteriores de dependências de efeitos em `Gestao.jsx`.
+Execute no backend: `python -m unittest discover -s tests -v` (dependências de teste: `httpx` e `aiosqlite`). Para incluir a migração, configure `DEMETER_TEST_POSTGRES_URL` para um PostgreSQL de teste. No frontend: `npm test` (quatro testes), `npm run build`, `npm run lint`. A compilação passou; o lint mantém dois avisos anteriores de dependências de efeitos em `Gestao.jsx`.
 
 As sessões foram incluídas para garantir a segurança da troca de credenciais. Continuam no plano do review: fila e confirmação de impressão, proteção contra envio repetido, correções dos relatórios de turno/agrupamento, comunicação entre workers e instalação de produção com HTTPS, supervisão e backups. O Windows atual usa um worker; o pacote de produção ainda requer a etapa de comunicação entre workers para fechar canais em todos os processos.

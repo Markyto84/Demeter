@@ -91,7 +91,7 @@ class Carga:
         u = self.unidades[unidade]
         url = self.urls[unidade].replace("https://", "wss://")
         caminho = f"/ws/cozinha-publica/{u['id']}" if painel == 0 else f"/ws/cozinha/{u['id']}"
-        argumentos = {} if painel == 0 else {"subprotocols": ["cnutri", u["tokens"][(painel - 1) % 5]]}
+        argumentos = {} if painel == 0 else {"subprotocols": ["demeter", u["tokens"][(painel - 1) % 5]]}
         ws = await connect(url + caminho, ssl=self.ssl, ping_interval=None, open_timeout=45, max_size=8 * 1024 * 1024, **argumentos)
         self.sockets.append(ws)
         chave = (unidade, painel)

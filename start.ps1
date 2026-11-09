@@ -50,7 +50,7 @@ function Wait-Http([string]$Url) {
 }
 
 function Show-ServiceInfo {
-    Write-Host "Ceres Care em execucao a partir de: $projectRoot" -ForegroundColor Green
+    Write-Host ("Dem{0}ter em execucao a partir de: {1}" -f [char]0x00E9, $projectRoot) -ForegroundColor Green
     Write-Host "Formulario: $frontendBase/unidade-havai"
     Write-Host "Login:      $frontendBase/login"
     Write-Host "Logs:       $logsRoot"

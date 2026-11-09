@@ -21,10 +21,10 @@ SENHA = "TesteSeguro@123"
 NOVA = "TempNova@12"
 
 
-@unittest.skipUnless(os.environ.get("CNUTRI_TEST_POSTGRES_URL"), "Requer PostgreSQL de teste")
+@unittest.skipUnless(os.environ.get("DEMETER_TEST_POSTGRES_URL"), "Requer PostgreSQL de teste")
 class ConcorrenciaSenhaTest(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
-        url = os.environ["CNUTRI_TEST_POSTGRES_URL"]
+        url = os.environ["DEMETER_TEST_POSTGRES_URL"]
         self.schema = "teste_seguranca_" + uuid4().hex
         self.admin_engine = create_async_engine(url)
         async with self.admin_engine.begin() as conn:

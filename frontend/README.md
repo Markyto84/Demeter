@@ -1,16 +1,13 @@
-# React + Vite
+# Deméter — interface web
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Interface React e Vite do Deméter, com formulários por unidade, cozinha, gestão, administração e comprovação de recebimento.
 
-Currently, two official plugins are available:
+## Desenvolvimento
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Na pasta `frontend`, execute `npm ci` e `npm run dev`. Para iniciar também a API e o banco, consulte o [guia do projeto](../README.md).
 
-## React Compiler
+## Verificação
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Execute `npm test`, `npm run lint` e `npm run build` antes de publicar alterações.
 
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+A identidade da aplicação fica em `src/services/marca.js`.

@@ -21,7 +21,7 @@ from configurar_servidor import configurar, preparar_email, principal
 class EnderecoInstalacaoTest(unittest.TestCase):
     def test_ip_dns_e_porta_produzem_origem_unica(self):
         for entrada, esperado in ((" HTTP://192.0.2.10:8080/ ", "http://192.0.2.10:8080"),
-            ("https://Ceres.EXEMPLO.local:443/", "https://ceres.exemplo.local"),
+            ("https://DEMETER.EXEMPLO.local:443/", "https://demeter.exemplo.local"),
             ("http://[2001:db8::10]:8080", "http://[2001:db8::10]:8080")):
             self.assertEqual(normalizar_endereco_publico(entrada), esperado)
 
@@ -35,8 +35,8 @@ class EnderecoInstalacaoTest(unittest.TestCase):
 
     def test_endereco_central_define_qr_e_cors_preservando_modo_anterior(self):
         argumentos = {"_env_file": None, "JWT_SECRET": "VALIDACAO-SEM-SEGREDO-" * 3, "APP_ENV": "test"}
-        central = Settings(**argumentos, URL_PUBLICA="https://ceres.exemplo.local:8443/", URL_RECEBIMENTO_PUBLICA="http://192.0.2.10")
-        self.assertEqual(central.URL_PUBLICA, "https://ceres.exemplo.local:8443")
+        central = Settings(**argumentos, URL_PUBLICA="https://demeter.exemplo.local:8443/", URL_RECEBIMENTO_PUBLICA="http://192.0.2.10")
+        self.assertEqual(central.URL_PUBLICA, "https://demeter.exemplo.local:8443")
         self.assertEqual(central.URL_RECEBIMENTO_PUBLICA, central.URL_PUBLICA)
         self.assertEqual(central.CORS_ORIGINS, [central.URL_PUBLICA])
         antigo = Settings(**argumentos, URL_RECEBIMENTO_PUBLICA="http://192.0.2.10/")
@@ -72,15 +72,15 @@ class AssistenteInstalacaoTest(unittest.TestCase):
             anterior = (root / "work/servidor.env").read_bytes()
             configurar(root, "http://192.0.2.10:8080")
             with self.assertRaises(ValueError):
-                configurar(root, "https://ceres.exemplo.local:8443")
+                configurar(root, "https://demeter.exemplo.local:8443")
             self.assertEqual((root / "work/servidor.env").read_bytes(), anterior)
-            configurar(root, "https://ceres.exemplo.local:8443", alterar=True)
+            configurar(root, "https://demeter.exemplo.local:8443", alterar=True)
             parametros = dotenv_values(root / "work/servidor.env")
-            self.assertEqual(parametros["URL_PUBLICA"], "https://ceres.exemplo.local:8443")
+            self.assertEqual(parametros["URL_PUBLICA"], "https://demeter.exemplo.local:8443")
             self.assertEqual(parametros["URL_RECEBIMENTO_PUBLICA"], parametros["URL_PUBLICA"])
-            self.assertEqual(parametros["CNUTRI_PORTA_HTTP"], "8080")
-            self.assertEqual(parametros["CNUTRI_PORTA_HTTPS"], "8443")
-            self.assertEqual(parametros["CNUTRI_HTTPS_ATIVO"], "true")
+            self.assertEqual(parametros["DEMETER_PORTA_HTTP"], "8080")
+            self.assertEqual(parametros["DEMETER_PORTA_HTTPS"], "8443")
+            self.assertEqual(parametros["DEMETER_HTTPS_ATIVO"], "true")
             self.assertEqual((root / ".env").read_bytes(), ambiente)
             self.assertEqual((root / "work/credencial-inicial.txt").read_bytes(), credencial)
             self.assertEqual((root / "work/servidor.env.anterior").read_bytes(), anterior)
@@ -88,8 +88,8 @@ class AssistenteInstalacaoTest(unittest.TestCase):
     def test_entrada_invalida_nao_cria_ou_altera_arquivos(self):
         with TemporaryDirectory() as pasta:
             root = Path(pasta)
-            for endereco, certificados in (("http://127.0.0.1", None), ("https://ceres.exemplo.local", "../../fora"),
-                ("https://ceres.exemplo.local:80", None), ("http://192.0.2.10", "/etc/tls\nCNUTRI_HTTPS_ATIVO=true")):
+            for endereco, certificados in (("http://127.0.0.1", None), ("https://demeter.exemplo.local", "../../fora"),
+                ("https://demeter.exemplo.local:80", None), ("http://192.0.2.10", "/etc/tls\nDEMETER_HTTPS_ATIVO=true")):
                 with self.assertRaises(ValueError):
                     configurar(root, endereco, certificados)
                 self.assertEqual(list(root.iterdir()), [])
@@ -118,9 +118,9 @@ class AssistenteInstalacaoTest(unittest.TestCase):
 
 class ConfiguracaoPublicaTest(unittest.IsolatedAsyncioTestCase):
     async def test_consulta_so_expoe_endereco_sem_exigir_login_e_sem_cache(self):
-        with patch.object(settings, "URL_PUBLICA", "https://ceres.exemplo.local"):
+        with patch.object(settings, "URL_PUBLICA", "https://demeter.exemplo.local"):
             async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://teste") as cliente:
                 resposta = await cliente.get("/api/configuracao/instalacao")
                 self.assertEqual(resposta.status_code, 200)
-                self.assertEqual(resposta.json(), {"url_publica": "https://ceres.exemplo.local"})
+                self.assertEqual(resposta.json(), {"url_publica": "https://demeter.exemplo.local"})
                 self.assertIn("no-store", resposta.headers["Cache-Control"])

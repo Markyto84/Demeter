@@ -114,7 +114,7 @@ class RevisaoFluxosTest(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(await db.scalar(select(func.count()).select_from(TrabalhoImpressao)), 0)
 
 
-@unittest.skipUnless(os.environ.get('CNUTRI_TEST_POSTGRES_URL'), 'Requer PostgreSQL de teste')
+@unittest.skipUnless(os.environ.get('DEMETER_TEST_POSTGRES_URL'), 'Requer PostgreSQL de teste')
 class RevisaoFluxosPostgresTest(RevisaoFluxosTest):
     fixture = fixtures.CozinhaSemLoginPostgresTest
 
