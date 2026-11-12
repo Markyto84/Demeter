@@ -25,6 +25,8 @@ async def resolver_unidade(referencia: str | int, db: AsyncSession) -> Filial:
     filial = await db.scalar(select(Filial).where(Filial.codigo_slug == referencia, Filial.ativa.is_(True)))
     if filial is None:
         raise HTTPException(404, "Unidade indisponível")
+    if filial.servidor_unidade_id:
+        raise HTTPException(409, f"A cozinha desta unidade está em {filial.url_servidor_local}/cozinha/{filial.codigo_slug}")
     return filial
 
 

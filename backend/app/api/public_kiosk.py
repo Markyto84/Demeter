@@ -23,6 +23,7 @@ from ..services.formulario_paciente import formulario_paciente
 from ..services.liquido_espessado import formulario_liquidos
 from ..core.security import usuario_opcional, verificar_acesso_filial
 from ..models.models import Usuario
+from ..models.rede import EstadoUnidadeLocal
 from ..services.assistencia import referencia_informada, registrar_evento, retrato, validar_referencia
 
 router = APIRouter(prefix="/api/public", tags=["Kiosk Público"])
@@ -42,6 +43,12 @@ async def obter_filial(slug: str, db: AsyncSession) -> Filial:
 async def obter_config_kiosk(slug: str, db: AsyncSession = Depends(get_db)):
     """Devolve o nome da filial, o catálogo de dietas e os formulários dinâmicos dos dois fluxos."""
     filial = await obter_filial(slug, db)
+    if filial.servidor_unidade_id:
+        return {"filial": {"id": filial.id, "nome": filial.nome, "codigo_slug": filial.codigo_slug},
+            "servidor_local": filial.url_servidor_local, "dietas": [], "formularios": {}}
+    estado_local = await db.get(EstadoUnidadeLocal, 1)
+    if estado_local and not estado_local.operacao_ativada:
+        raise HTTPException(409, "Servidor da unidade em preparação. Aguarde a ativação pela TI antes de iniciar os atendimentos")
     dietas = (
         await db.execute(
             select(Dieta).where(Dieta.filial_id == filial.id, Dieta.ativa == True).order_by(Dieta.nome)  # noqa: E712

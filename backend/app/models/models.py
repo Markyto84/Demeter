@@ -1,14 +1,32 @@
 """Modelos SQLAlchemy — espelham o DDL da especificação técnica."""
 from datetime import datetime
+from uuid import uuid4
 
 from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Index, Integer, LargeBinary, String, Text, UniqueConstraint, and_, func, select
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.compiler import compiles
+from sqlalchemy.sql.functions import FunctionElement
 from sqlalchemy.orm import Mapped, column_property, mapped_column, relationship
 
 from ..core.database import Base
 
 # JSON portável: JSONB no PostgreSQL, JSON genérico nos demais bancos
 JSONType = JSON().with_variant(JSONB, "postgresql")
+
+
+class IdentidadeGlobal(FunctionElement):
+    type = String()
+    inherit_cache = True
+
+
+@compiles(IdentidadeGlobal, "postgresql")
+def _uuid_postgresql(elemento, compilador, **kw):
+    return "gen_random_uuid()::text"
+
+
+@compiles(IdentidadeGlobal, "sqlite")
+def _uuid_sqlite(elemento, compilador, **kw):
+    return "(lower(hex(randomblob(4))) || '-' || lower(hex(randomblob(2))) || '-' || lower(hex(randomblob(2))) || '-' || lower(hex(randomblob(2))) || '-' || lower(hex(randomblob(6))))"
 
 
 class Perfil(Base):
@@ -28,6 +46,8 @@ class Filial(Base):
     codigo_slug: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     ip_impressora: Mapped[str | None] = mapped_column(String(45))
     ativa: Mapped[bool] = mapped_column(Boolean, default=True)
+    servidor_unidade_id: Mapped[str | None] = mapped_column(String(36))
+    url_servidor_local: Mapped[str | None] = mapped_column(String(300))
     criado_em: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     dietas: Mapped[list["Dieta"]] = relationship(back_populates="filial", cascade="all, delete")
@@ -181,6 +201,7 @@ class Pedido(Base):
     __tablename__ = "pedidos"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    uuid_global: Mapped[str] = mapped_column(String(36), unique=True, nullable=False, default=lambda: str(uuid4()), server_default=IdentidadeGlobal())
     filial_id: Mapped[int] = mapped_column(ForeignKey("filiais.id", ondelete="RESTRICT"), nullable=False)
     tipo_solicitacao: Mapped[str] = mapped_column(String(20), nullable=False)  # MEDICO | PACIENTE
     solicitante_identificacao: Mapped[str] = mapped_column(String(50), nullable=False)
@@ -375,3 +396,7 @@ class RecebimentoEntrega(Base):
     pedido_id: Mapped[int] = mapped_column(ForeignKey("entregas_pedidos.pedido_id", ondelete="RESTRICT"), primary_key=True)
     recebedor_nome: Mapped[str] = mapped_column(String(120), nullable=False)
     assinatura_png: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
+
+
+# Registra também as tabelas opcionais de servidores locais no mesmo metadata.
+from . import rede as _rede  # noqa: E402,F401

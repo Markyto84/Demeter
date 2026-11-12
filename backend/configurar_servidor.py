@@ -10,6 +10,7 @@ import string
 import subprocess
 import tempfile
 from urllib.parse import urlsplit
+from uuid import UUID, uuid4
 
 from app.core.endereco_publico import normalizar_endereco_publico
 
@@ -65,7 +66,7 @@ def senha_inicial():
     return "".join(senha)
 
 
-def configurar(raiz, endereco, certificados=None, *, alterar=False):
+def configurar(raiz, endereco, certificados=None, *, alterar=False, modo=None, vinculo=None, ca_central=None):
     raiz = Path(raiz).resolve()
     if not raiz.is_dir() or raiz == Path(raiz.anchor):
         raise ValueError("Informe a pasta da instalação, já existente.")
@@ -77,6 +78,40 @@ def configurar(raiz, endereco, certificados=None, *, alterar=False):
         raise ValueError("Informe uma pasta Linux absoluta para os certificados, sem espaços ou parâmetros.")
     arquivo = raiz / "work/servidor.env"
     anterior = ler_configuracao(arquivo)
+    modo = (modo or anterior.get("MODO_SERVIDOR", "INDEPENDENTE")).upper()
+    if modo not in ("INDEPENDENTE", "CENTRAL", "UNIDADE"):
+        raise ValueError("Modo de servidor inválido")
+    if anterior.get("MODO_SERVIDOR") == "UNIDADE" and modo != "UNIDADE":
+        raise ValueError("Uma unidade vinculada não pode mudar de papel. Planeje a recuperação com a TI")
+    if modo == "CENTRAL" and not https:
+        raise ValueError("O central de sincronização requer um endereço HTTPS")
+    arquivo_vinculo = raiz / "work/unidade/vinculo.json"
+    novo_vinculo = None
+    if modo == "UNIDADE":
+        try:
+            atual = json.loads(arquivo_vinculo.read_text(encoding="utf-8")) if arquivo_vinculo.exists() else None
+            novo_vinculo = json.loads(Path(vinculo).read_text(encoding="utf-8")) if vinculo else atual
+            if not isinstance(novo_vinculo, dict): raise ValueError()
+            permitidos = {"protocolo", "servidor_id", "central_url", "token", "geracao", "intervalo_segundos", "instalacao_uuid"}
+            if set(novo_vinculo) - permitidos or novo_vinculo["protocolo"] != 1: raise ValueError()
+            UUID(novo_vinculo["servidor_id"])
+            central = normalizar_endereco_publico(novo_vinculo["central_url"], permitir_local=False)
+            if not central.startswith("https://") or not 40 <= len(novo_vinculo["token"]) <= 200: raise ValueError()
+            if not isinstance(novo_vinculo["geracao"], int) or novo_vinculo["geracao"] < 1: raise ValueError()
+            if not 15 <= novo_vinculo.get("intervalo_segundos", 60) <= 3600: raise ValueError()
+            if atual and atual["servidor_id"] != novo_vinculo["servidor_id"]: raise ValueError()
+            novo_vinculo["central_url"] = central
+            novo_vinculo["instalacao_uuid"] = atual["instalacao_uuid"] if atual else str(uuid4())
+            UUID(novo_vinculo["instalacao_uuid"])
+        except (ValueError, KeyError, TypeError, OSError):
+            raise ValueError("Forneça um vínculo privado válido do central, destinado somente a esta instalação") from None
+    elif vinculo or ca_central:
+        raise ValueError("Vínculo e CA do central são usados somente no modo unidade")
+    ca_texto = Path(ca_central).read_text(encoding="ascii") if ca_central else None
+    if ca_texto:
+        import ssl
+        try: ssl.create_default_context(cadata=ca_texto)
+        except (ValueError, ssl.SSLError): raise ValueError("Certificado CA do central inválido") from None
     porta_http = anterior.get("DEMETER_PORTA_HTTP", "80") if https else str(partes.port or 80)
     if not porta_http.isdigit() or not 1 <= int(porta_http) <= 65535:
         raise ValueError("A porta HTTP anterior é inválida; confira a configuração existente.")
@@ -88,6 +123,13 @@ def configurar(raiz, endereco, certificados=None, *, alterar=False):
         "DEMETER_HOSTNAME": partes.hostname, "DEMETER_PORTA_HTTP": porta_http,
         "DEMETER_PORTA_HTTPS": porta_https, "DEMETER_HTTPS_ATIVO": "true" if https else "false",
         "DEMETER_TLS_DIR": pasta_tls}
+    # O modo padrão conserva o formato das instalações anteriores.
+    if modo != "INDEPENDENTE" or "MODO_SERVIDOR" in anterior:
+        valores["MODO_SERVIDOR"] = modo
+    if modo == "UNIDADE":
+        valores["SINCRONIZACAO_VINCULO"] = "/etc/demeter/unidade/vinculo.json"
+        if ca_texto or (raiz / "work/unidade/central-ca.pem").exists():
+            valores["SINCRONIZACAO_CA"] = "/etc/demeter/unidade/central-ca.pem"
     conteudo = "# Configuração da instalação Deméter. Gerada pelo assistente local.\n"
     conteudo += "\n".join(f"{chave}={valor}" for chave, valor in valores.items()) + "\n"
     if anterior and anterior != valores and not alterar:
@@ -107,6 +149,10 @@ def configurar(raiz, endereco, certificados=None, *, alterar=False):
         if arquivo.exists():
             gravar_privado(raiz / "work/servidor.env.anterior", arquivo.read_text(encoding="utf-8"))
         gravar_privado(arquivo, conteudo)
+    if novo_vinculo:
+        gravar_privado(arquivo_vinculo, json.dumps(novo_vinculo, ensure_ascii=False, indent=2) + "\n")
+    if ca_texto:
+        gravar_privado(raiz / "work/unidade/central-ca.pem", ca_texto)
     return {"url_publica": endereco, "https": https, "arquivo": str(arquivo), "credencial": str(credencial) if credencial.exists() else None}
 
 
@@ -116,6 +162,9 @@ def principal():
     parser.add_argument("--endereco", help="Endereço completo acessível aos computadores e celulares, por exemplo http://192.0.2.10:8080")
     parser.add_argument("--certificados", help="Pasta Linux com servidor.pem e chave.pem, para HTTPS")
     parser.add_argument("--alterar", action="store_true", help="Prepara outro endereço sem modificar senhas ou banco")
+    parser.add_argument("--modo", choices=("independente", "central", "unidade"), help="Papel da instalação; o padrão preserva o papel anterior")
+    parser.add_argument("--vinculo", type=Path, help="Arquivo privado emitido no painel central para esta unidade")
+    parser.add_argument("--ca-central", type=Path, help="CA PEM confiável para o certificado HTTPS do central")
     parser.add_argument("--preparar-email", action="store_true", help="Adiciona somente a chave privada de e-mail, preservando o restante da instalação")
     args = parser.parse_args()
     try:
@@ -124,7 +173,7 @@ def principal():
             print(f"Proteção de e-mail preparada em {caminho_email}. Nenhum segredo foi exibido. Reinicie a API.")
             return
         endereco = args.endereco or input("Endereço da instalação (http://IP:porta ou https://domínio): ").strip()
-        resultado = configurar(args.diretorio, endereco, args.certificados, alterar=args.alterar)
+        resultado = configurar(args.diretorio, endereco, args.certificados, alterar=args.alterar, modo=args.modo, vinculo=args.vinculo, ca_central=args.ca_central)
     except (ValueError, OSError, EOFError) as erro:
         parser.exit(1, f"Não foi possível preparar a configuração: {erro or 'informe --endereco no comando'}.\n")
     print("Configuração inicial preparada. Os serviços serão iniciados pelo comando iniciar.")

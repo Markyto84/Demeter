@@ -55,6 +55,8 @@ class FilialOut(FilialBase):
     model_config = ConfigDict(from_attributes=True)
     id: int
     ativa: bool
+    servidor_unidade_id: str | None = None
+    url_servidor_local: str | None = None
 
 
 class ImpressoraEtiquetaUpdate(BaseModel):

@@ -1,6 +1,6 @@
-# Estrutura limpa do Deméter 0.1.1
+# Estrutura limpa do Deméter 0.2.0
 
-`demeter-banco-limpo-0.1.1.sql` contém somente a estrutura PostgreSQL 16: tabelas,
+`demeter-banco-limpo-0.2.0.sql` contém somente a estrutura PostgreSQL 16: tabelas,
 índices, restrições e sequências. Não contém registros, contas, senhas, pacientes,
 pedidos, fotos, configuração SMTP ou impressoras.
 
@@ -8,7 +8,7 @@ O instalador Linux prepara a estrutura automaticamente. Esse SQL é uma alternat
 para a TI, exclusivamente em um banco novo vazio. Não importe sobre uma base em uso.
 
 ```sh
-psql --dbname=NOVO_BANCO --set=ON_ERROR_STOP=1 --file=demeter-banco-limpo-0.1.1.sql
+psql --dbname=NOVO_BANCO --set=ON_ERROR_STOP=1 --file=demeter-banco-limpo-0.2.0.sql
 ```
 
 Configure o endereço desse banco e os segredos da nova instalação antes de iniciar

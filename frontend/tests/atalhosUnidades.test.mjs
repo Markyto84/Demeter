@@ -11,6 +11,13 @@ const lerAtalho = atalho => {
 }
 const textoAtalho = atalho => lerAtalho(atalho).toString('utf16le')
 
+test('unidade transferida distribui atalho para seu servidor local', () => {
+  const atalho = criarAtalhoUnidade({ ...unidade, url_servidor_local: 'https://havai.example.test' }, 'https://central.example.test')
+  assert.equal(atalho.url, 'https://havai.example.test/unidade-colorado')
+  assert.ok(textoAtalho(atalho).includes('https://havai.example.test/unidade-colorado'))
+  assert.equal(criarAtalhoUnidade({ ...unidade, url_servidor_local: 'https://usuario:segredo@havai.example.test' }, 'https://central.example.test'), null)
+})
+
 for (const origem of ['http://10.1.140.15:5173', 'https://demeter.empresa.local']) {
   test(`atalho distribuído abre diretamente a unidade usando ${origem}`, () => {
     const atalho = criarAtalhoUnidade(unidade, origem)

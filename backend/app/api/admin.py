@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from ..core.database import get_db
+from ..core.config import settings
 from ..core.security import exigir_perfis, hash_senha
 from ..core.sessoes import revogar_sessoes
 from ..core.ws import gerenciador_ws
@@ -47,6 +48,8 @@ async def listar_filiais(db: AsyncSession = Depends(get_db), _: Usuario = Depend
 
 @router.post("/filiais", response_model=FilialOut, status_code=status.HTTP_201_CREATED)
 async def criar_filial(dados: FilialCreate, db: AsyncSession = Depends(get_db), _: Usuario = Depends(ADMIN)):
+    if settings.MODO_SERVIDOR == "UNIDADE":
+        raise HTTPException(409, "A unidade deste servidor é preparada pelo vínculo com o central")
     existe = (
         await db.execute(select(Filial).where(Filial.codigo_slug == dados.codigo_slug))
     ).scalar_one_or_none()
@@ -87,6 +90,10 @@ async def criar_filial(dados: FilialCreate, db: AsyncSession = Depends(get_db), 
 @router.patch("/filiais/{filial_id}", response_model=FilialOut)
 async def atualizar_filial(filial_id: int, dados: FilialUpdate, db: AsyncSession = Depends(get_db), _: Usuario = Depends(ADMIN)):
     filial = await unidade(filial_id, db, bloquear=True)
+    if filial.servidor_unidade_id:
+        raise HTTPException(409, "Esta unidade opera no servidor local; altere seus cadastros naquele servidor")
+    if settings.MODO_SERVIDOR == "UNIDADE" and (dados.nome != filial.nome or dados.codigo_slug != filial.codigo_slug):
+        raise HTTPException(409, "A identidade da unidade vinculada é definida no cadastro central")
     antes = retrato(filial, UNIDADE)
     for campo, valor in dados.model_dump(exclude_unset=True).items():
         setattr(filial, campo, valor)
@@ -101,6 +108,8 @@ async def atualizar_filial(filial_id: int, dados: FilialUpdate, db: AsyncSession
 @router.patch("/filiais/{filial_id}/impressora", response_model=FilialOut)
 async def salvar_impressora(filial_id: int, dados: ImpressoraUpdate, db: AsyncSession = Depends(get_db), _: Usuario = Depends(ADMIN)):
     filial = await unidade(filial_id, db, bloquear=True)
+    if filial.servidor_unidade_id:
+        raise HTTPException(409, "Use Cadastros da unidade na aba Servidores das unidades para enviar esta alteração")
     antes = {"ip_impressora": filial.ip_impressora}
     filial.ip_impressora = dados.ip_impressora
     registrar(db, _, "IMPRESSORA_FILIPETA", filial.id, filial.id, antes, {"ip_impressora": filial.ip_impressora})

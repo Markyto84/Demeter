@@ -10,6 +10,7 @@ import ConfiguracaoAlertas from '../components/ConfiguracaoAlertas.jsx'
 import HistoricoAdministrativo from '../components/HistoricoAdministrativo.jsx'
 import Monitoramento from '../components/Monitoramento.jsx'
 import Prescricoes from '../components/Prescricoes.jsx'
+import { AbaFormularios } from './Gestao.jsx'
 import { MAX_SENHA, MIN_SENHA, PADRAO_SENHA, REGRA_SENHA, senhaValida } from '../services/politicaSenha.js'
 import { Icone, Indicador, MarcaAplicacao } from '../components/Identidade.jsx'
 
@@ -18,6 +19,7 @@ const PRIMARIO = 'ui-button ui-button-primary'
 const SECUNDARIO = 'ui-button ui-button-secondary'
 const PERFIS = { ADMIN_TI: 'Administrador', NUTRICIONISTA: 'Gestor de nutrição', COZINHA: 'Cozinha', COPEIRA: 'Copeira' }
 const AvisosEmail = lazy(() => import('../components/AvisosEmail.jsx'))
+const ServidoresUnidades = lazy(() => import('../components/ServidoresUnidades.jsx'))
 
 function mensagemErro(e) {
   const detalhe = e.response?.data?.detail
@@ -37,7 +39,7 @@ function Aviso({ erro, sucesso }) {
 export default function Admin() {
   const { usuario, sair, atualizarUsuario } = useAuth()
   const [aba, setAba] = useState('monitoramento')
-  const [dados, setDados] = useState({ filiais: [], usuarios: [], urlPublica: null })
+  const [dados, setDados] = useState({ filiais: [], usuarios: [], urlPublica: null, modo: 'INDEPENDENTE' })
   const [carregando, setCarregando] = useState(true)
   const [revisao, setRevisao] = useState(0)
   const [erro, setErro] = useState(null)
@@ -46,7 +48,7 @@ export default function Admin() {
   useEffect(() => {
     const controller = new AbortController()
     Promise.all([api.get('/admin/filiais', { signal: controller.signal }), api.get('/admin/usuarios', { signal: controller.signal }), api.get('/configuracao/instalacao', { signal: controller.signal })])
-      .then(([filiais, usuarios, instalacao]) => { if (!controller.signal.aborted) setDados({ filiais: filiais.data, usuarios: usuarios.data, urlPublica: instalacao.data.url_publica }) })
+      .then(([filiais, usuarios, instalacao]) => { if (!controller.signal.aborted) setDados({ filiais: filiais.data, usuarios: usuarios.data, urlPublica: instalacao.data.url_publica, modo: instalacao.data.modo_servidor || 'INDEPENDENTE' }) })
       .catch((e) => { if (!controller.signal.aborted) setErro(mensagemErro(e)) })
       .finally(() => { if (!controller.signal.aborted) setCarregando(false) })
     return () => controller.abort()
@@ -79,11 +81,15 @@ export default function Admin() {
       {[['monitoramento', 'Monitoramento', 'gestao'], ['servidor', 'Servidor da aplicação', 'ajustes'], ['prescricoes', 'Pedidos e rastreabilidade', 'prancheta'], ['unidades', 'Unidades', 'unidade'], ['credenciais', 'Credenciais', 'chave'], ['impressoras', 'Impressoras', 'impressora'], ['avisos-email', 'Avisos por e-mail', 'email'], ['central-impressoes', 'Central de impressões', 'impressora'], ['alertas', 'Alertas de demora', 'relogio'], ['historico', 'Histórico de alterações', 'historico'], ['relatorios', 'Relatórios', 'gestao']].map(([id, rotulo, icone]) =>
         <button key={id} aria-pressed={aba === id} onClick={() => { setAba(id); setErro(null); setSucesso(null) }} className={aba === id ? PRIMARIO : SECUNDARIO}><Icone nome={icone} tamanho={18} />{rotulo}</button>)}
     </nav>
+    <div className="flex flex-wrap gap-2"><button className={aba === 'rede' ? PRIMARIO : SECUNDARIO} onClick={() => setAba('rede')}>Servidores das unidades</button>
+      {dados.modo === 'CENTRAL' && <button className={aba === 'relatorios-rede' ? PRIMARIO : SECUNDARIO} onClick={() => setAba('relatorios-rede')}>Relatório consolidado da rede</button>}</div>
     <Aviso erro={erro} sucesso={sucesso} />
     {carregando ? <p>Carregando administração…</p> : <>
       {aba === 'monitoramento' && <Monitoramento onAbrirCentral={() => setAba('central-impressoes')} />}
       {aba === 'prescricoes' && <Prescricoes filiais={dados.filiais} />}
       {aba === 'servidor' && <ServidorInstalacao urlPublica={dados.urlPublica} />}
+      {aba === 'rede' && <Suspense fallback={<p>Carregando servidores…</p>}><ServidoresUnidades filiais={dados.filiais} EditorFormulario={AbaFormularios} /></Suspense>}
+      {aba === 'relatorios-rede' && <RelatorioDietas filiais={dados.filiais} consolidado />}
       {aba === 'unidades' && <Unidades filiais={dados.filiais} urlPublica={dados.urlPublica} onConcluido={concluido} />}
       {aba === 'credenciais' && <Credenciais filiais={dados.filiais} usuarios={dados.usuarios} usuarioAtual={usuario} onConcluido={concluido} />}
       {aba === 'impressoras' && <Impressoras filiais={dados.filiais} onConcluido={concluido} />}
@@ -122,10 +128,10 @@ function Unidades({ filiais, urlPublica, onConcluido }) {
         </div>
         <p className="text-sm text-slate-700">Impressora: {f.ip_impressora || 'Não configurada'}</p>
         <div className="flex flex-wrap gap-2">
-          {f.ativa && <a href={`/${f.codigo_slug}`} target="_blank" rel="noreferrer" className={SECUNDARIO}>Abrir formulário</a>}
+          {f.ativa && <a href={`${f.url_servidor_local || ''}/${f.codigo_slug}`} target="_blank" rel="noreferrer" className={SECUNDARIO}>Abrir formulário</a>}
           <AtalhoUnidade filial={f} urlPublica={urlPublica} />
           <Link to={`/gestao?unidade=${f.id}`} className={SECUNDARIO}>Gerenciar unidade</Link>
-          <Link to={caminhoCozinha(f)} className={SECUNDARIO}>Painel da cozinha</Link>
+          <a href={`${f.url_servidor_local || ''}${caminhoCozinha(f)}`} className={SECUNDARIO}>Painel da cozinha</a>
         </div>
       </article>)}
       {!filiais.length && <p className="rounded-xl bg-panel p-5">Cadastre a primeira unidade para começar.</p>}

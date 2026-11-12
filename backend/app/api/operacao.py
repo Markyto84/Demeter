@@ -29,6 +29,8 @@ async def unidade_ativa(filial_id: int, db: AsyncSession) -> Filial:
     filial = await db.get(Filial, filial_id)
     if not filial or not filial.ativa:
         raise HTTPException(404, "Unidade indisponível")
+    if filial.servidor_unidade_id:
+        raise HTTPException(409, f"O atendimento acontece no servidor da unidade: {filial.url_servidor_local}")
     return filial
 
 

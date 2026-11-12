@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { api } from '../services/api.js'
 import { caminhoCozinha } from '../services/rotasUnidades.js'
@@ -12,9 +12,17 @@ import HistoricoAdministrativo from '../components/HistoricoAdministrativo.jsx'
 import Prescricoes from '../components/Prescricoes.jsx'
 import { Icone, MarcaAplicacao } from '../components/Identidade.jsx'
 
+const CadastrosUnidade = lazy(() => import('../components/CadastrosUnidade.jsx'))
+
 /** Painel da Nutrição: catálogo de dietas, editor de formulários e relatórios. */
 export default function Gestao() {
   const [aba, setAba] = useState('dietas')
+  const [modo, setModo] = useState('INDEPENDENTE')
+  useEffect(() => {
+    const controller = new AbortController()
+    api.get('/configuracao/instalacao', { signal: controller.signal }).then(r => setModo(r.data.modo_servidor || 'INDEPENDENTE')).catch(() => {})
+    return () => controller.abort()
+  }, [])
   const { usuario, sair } = useAuth()
   const [parametros, setParametros] = useSearchParams()
   const filiais = usuario.filiais || []
@@ -59,13 +67,18 @@ export default function Gestao() {
           </button>
         ))}
       </nav>
+      {modo === 'CENTRAL' && <button className="ui-button ui-button-secondary mb-4" onClick={() => setAba('rede')}>Relatório consolidado da rede</button>}
+      {filial.servidor_unidade_id && <div className="mb-5 space-y-4"><p className="rounded-lg bg-brand-soft p-3 text-sm text-brand-ink">O atendimento desta unidade acontece no servidor local. Cadastros enviados daqui aguardam confirmação da unidade.</p>
+        <Suspense fallback={<p>Carregando cadastros da unidade…</p>}><CadastrosUnidade key={filial.servidor_unidade_id} servidorId={filial.servidor_unidade_id} EditorFormulario={AbaFormularios} /></Suspense>
+        <a className="ui-button ui-button-secondary" href={`${filial.url_servidor_local}/gestao`}>Abrir gestão local da unidade</a></div>}
+      {aba === 'rede' && modo === 'CENTRAL' && <RelatorioDietas filiais={filiais} consolidado />}
 
-      {aba === 'dietas' && <AbaDietas key={filialId} filialId={filialId} />}
+      {aba === 'dietas' && !filial.servidor_unidade_id && <AbaDietas key={filialId} filialId={filialId} />}
       {aba === 'prescricoes' && <Prescricoes key={filialId} filialId={filialId} />}
-      {aba === 'formularios' && <AbaFormularios key={filialId} filialId={filialId} />}
+      {aba === 'formularios' && !filial.servidor_unidade_id && <AbaFormularios key={filialId} filialId={filialId} />}
       {aba === 'relatorios' && <AbaRelatorios key={filialId} filialId={filialId} />}
       {aba === 'central-impressoes' && <CentralImpressoes key={filialId} filialId={filialId} />}
-      {aba === 'alertas' && <ConfiguracaoAlertas key={filialId} filialId={filialId} />}
+      {aba === 'alertas' && !filial.servidor_unidade_id && <ConfiguracaoAlertas key={filialId} filialId={filialId} />}
       {aba === 'historico' && usuario.perfil === 'ADMIN_TI' && <HistoricoAdministrativo key={filialId} filialId={filialId} filiais={filiais} administrador />}
     </div>
   )
@@ -218,14 +231,14 @@ function montarPayload(cfg) {
   }
 }
 
-function AbaFormularios({ filialId }) {
+export function AbaFormularios({ filialId, remoto = null }) {
   const { usuario } = useAuth()
   const estruturaEditavel = usuario?.perfil === 'ADMIN_TI'
   const [tipo, setTipo] = useState('ENFERMAGEM')
   const [config, setConfig] = useState(null)
 
   const recarregar = (t = tipo) =>
-    api.get(`/gestao/formularios/${filialId}/${t}`).then((r) =>
+    (remoto ? remoto.carregar(t).then(data => ({ data })) : api.get(`/gestao/formularios/${filialId}/${t}`)).then((r) =>
       setConfig({
         ...normalizarParaEdicao(r.data?.esquema_json || { titulo: '', cabecalho: '', campos: [] }),
         versao: r.data?.atualizado_em || null, // para proteção contra edição concorrente
@@ -249,6 +262,7 @@ function AbaFormularios({ filialId }) {
   async function salvar() {
     const { versao, ...esquema } = config
     try {
+      if (remoto) { await remoto.salvar(tipo, { esquema_json: montarPayload(esquema) }, versao); return }
       await api.put(`/gestao/formularios/${filialId}/${tipo}`, { esquema_json: montarPayload(esquema), versao })
       alert('Formulário publicado! Atualização instantânea nos quiosques ✅')
       recarregar(tipo)
@@ -402,8 +416,8 @@ function AbaFormularios({ filialId }) {
           )}
           <div className="flex flex-wrap gap-2 pt-2">
             {estruturaEditavel && <button onClick={adicionarCampo} className="rounded bg-slate-50 px-4 py-2 text-sm hover:bg-slate-200">+ Adicionar campo</button>}
-            {estruturaEditavel && <button onClick={resetar} className="rounded bg-slate-50 px-4 py-2 text-sm hover:bg-slate-200">↺ Restaurar padrão</button>}
-            <button onClick={salvar} className="ui-button ui-button-primary"><Icone nome="conferir" tamanho={18} />Publicar</button>
+            {estruturaEditavel && !remoto && <button onClick={resetar} className="rounded bg-slate-50 px-4 py-2 text-sm hover:bg-slate-200">↺ Restaurar padrão</button>}
+            <button onClick={salvar} className="ui-button ui-button-primary"><Icone nome="conferir" tamanho={18} />{remoto ? 'Enviar formulário à unidade' : 'Publicar'}</button>
           </div>
         </div>
       )}

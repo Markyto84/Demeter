@@ -1,0 +1,8 @@
+# Aplicado automaticamente por servidor.sh no modo UNIDADE.
+services:
+  backend:
+    environment:
+      SINCRONIZACAO_VINCULO: /etc/demeter/unidade/vinculo.json
+      SINCRONIZACAO_CA: ${SINCRONIZACAO_CA:-}
+    volumes:
+      - ./work/unidade:/etc/demeter/unidade:ro

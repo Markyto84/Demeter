@@ -122,5 +122,5 @@ class ConfiguracaoPublicaTest(unittest.IsolatedAsyncioTestCase):
             async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://teste") as cliente:
                 resposta = await cliente.get("/api/configuracao/instalacao")
                 self.assertEqual(resposta.status_code, 200)
-                self.assertEqual(resposta.json(), {"url_publica": "https://demeter.exemplo.local"})
+                self.assertEqual(resposta.json(), {"url_publica": "https://demeter.exemplo.local", "modo_servidor": "INDEPENDENTE"})
                 self.assertIn("no-store", resposta.headers["Cache-Control"])

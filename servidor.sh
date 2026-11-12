@@ -29,14 +29,14 @@ compose() {
     echo 'Execute primeiro: ./servidor.sh configurar' >&2
     exit 1
   fi
-  if grep -qx 'DEMETER_HTTPS_ATIVO=true' "$RAIZ/work/servidor.env"; then
-    docker compose --project-directory "$RAIZ" --env-file "$RAIZ/.env" \
-      --env-file "$RAIZ/work/servidor.env" -f "$RAIZ/docker-compose.prod.yml" \
-      -f "$RAIZ/docker-compose.https.yml" "$@"
-  else
-    docker compose --project-directory "$RAIZ" --env-file "$RAIZ/.env" \
-      --env-file "$RAIZ/work/servidor.env" -f "$RAIZ/docker-compose.prod.yml" "$@"
+  if grep -qx 'MODO_SERVIDOR=UNIDADE' "$RAIZ/work/servidor.env"; then
+    set -- -f "$RAIZ/docker-compose.unidade.yml" "$@"
   fi
+  if grep -qx 'DEMETER_HTTPS_ATIVO=true' "$RAIZ/work/servidor.env"; then
+    set -- -f "$RAIZ/docker-compose.https.yml" "$@"
+  fi
+  docker compose --project-directory "$RAIZ" --env-file "$RAIZ/.env" \
+    --env-file "$RAIZ/work/servidor.env" -f "$RAIZ/docker-compose.prod.yml" "$@"
 }
 
 case "$ACAO" in
@@ -63,6 +63,8 @@ case "$ACAO" in
   ajuda|--help|-h)
     echo 'Deméter — configuração da instalação Linux'
     echo './servidor.sh configurar [--endereco http://IP:porta] [--alterar]'
+    echo './servidor.sh configurar --modo central --endereco https://central.dominio'
+    echo './servidor.sh configurar --modo unidade --endereco https://unidade.dominio --vinculo /caminho/vinculo.json [--ca-central /caminho/ca.pem]'
     echo './servidor.sh configurar --endereco https://dominio [--certificados /etc/demeter/tls] --alterar'
     echo './servidor.sh validar | iniciar | status | logs'
     ;;

@@ -3,7 +3,7 @@ import re
 from typing import Literal
 from urllib.parse import urlsplit
 
-from pydantic import Field, model_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.engine import make_url
 from .marca import NOME_APLICACAO
@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     JWT_SECRET: str = Field(min_length=32, repr=False)
     ADMIN_INICIAL_SENHA: str | None = Field(default=None, repr=False)
     INICIALIZAR_DEMONSTRACAO: bool = False
+    MODO_SERVIDOR: Literal["INDEPENDENTE", "CENTRAL", "UNIDADE"] = "INDEPENDENTE"
+    SINCRONIZACAO_VINCULO: Path | None = Field(default=None, repr=False)
+    SINCRONIZACAO_CA: Path | None = Field(default=None, repr=False)
     JWT_ALG: str = "HS256"
     JWT_EXPIRA_MINUTOS: int = 720
     CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
@@ -36,8 +39,17 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=(BACKEND.parent / ".env", BACKEND / ".env"), env_file_encoding="utf-8", extra="ignore", hide_input_in_errors=True)
 
+    @field_validator("SINCRONIZACAO_CA", "SINCRONIZACAO_VINCULO", mode="before")
+    @classmethod
+    def arquivo_opcional(cls, valor):
+        return None if valor == "" else valor
+
     @model_validator(mode="after")
     def impedir_segredos_padrao(self):
+        if self.MODO_SERVIDOR == "UNIDADE" and not self.SINCRONIZACAO_VINCULO:
+            raise ValueError("Informe o arquivo privado de vínculo do servidor da unidade")
+        if self.SINCRONIZACAO_CA and not self.SINCRONIZACAO_CA.is_file():
+            raise ValueError("Certificado da autoridade do servidor central não encontrado")
         if self.EMAIL_CREDENCIAIS_CHAVE:
             from cryptography.fernet import Fernet
             try:

@@ -71,9 +71,9 @@ def valor_celula(item, chave):
     return limpar(valor)
 
 
-def tabelas(itens, resumo, totais):
+def tabelas(itens, resumo, totais, colunas=COLUNAS):
     total = {"unidade": "TOTAL", "dieta": "", **totais}
-    return [("Resumo", RESUMO, [*resumo, total]), ("Solicitações", COLUNAS, itens)]
+    return [("Resumo", RESUMO, [*resumo, total]), ("Solicitações", colunas, itens)]
 
 
 def contexto_linhas(contexto):
@@ -86,9 +86,9 @@ def contexto_linhas(contexto):
         f"Fonte: registros do {NOME_APLICACAO}. Os horários das planilhas estão em Brasília (UTC-3)."]
 
 
-def xlsx(itens, resumo, totais, contexto):
+def xlsx(itens, resumo, totais, contexto, colunas=COLUNAS):
     livro = Workbook(write_only=True)
-    for nome, colunas, registros in tabelas(itens, resumo, totais):
+    for nome, colunas, registros in tabelas(itens, resumo, totais, colunas):
         folha = livro.create_sheet(nome)
         folha.sheet_view.showGridLines = False
         folha.freeze_panes = "C8"
@@ -132,7 +132,7 @@ def xlsx(itens, resumo, totais, contexto):
     return buffer.getvalue()
 
 
-def ods(itens, resumo, totais, contexto):
+def ods(itens, resumo, totais, contexto, colunas=COLUNAS):
     livro = OpenDocumentSpreadsheet()
     formato_data = DateStyle(name="DataHoraBrasilia")
     for elemento in (Day(style="long"), Text(text="/"), Month(style="long"), Text(text="/"), Year(style="long"),
@@ -155,7 +155,7 @@ def ods(itens, resumo, totais, contexto):
     altura = Style(name="AlturaAutomatica", family="table-row")
     altura.addElement(TableRowProperties(useoptimalrowheight="true", minrowheight="0.55cm"))
     livro.styles.addElement(altura)
-    for nome, colunas, registros in tabelas(itens, resumo, totais):
+    for nome, colunas, registros in tabelas(itens, resumo, totais, colunas):
         tabela = Table(name=nome)
         for n, (_, _, largura) in enumerate(colunas):
             estilo = Style(name=f"Coluna{nome}{n}", family="table-column")
@@ -192,13 +192,13 @@ def ods(itens, resumo, totais, contexto):
     return buffer.getvalue()
 
 
-def csv_sheets(itens):
+def csv_sheets(itens, colunas=COLUNAS):
     buffer = StringIO(newline="")
     escritor = csv.writer(buffer, delimiter=",")
-    escritor.writerow([titulo for _, titulo, _ in COLUNAS])
+    escritor.writerow([titulo for _, titulo, _ in colunas])
     for item in itens:
         linha = []
-        for chave, _, _ in COLUNAS:
+        for chave, _, _ in colunas:
             valor = valor_celula(item, chave)
             if isinstance(valor, datetime):
                 valor = valor.isoformat(sep=" ")
@@ -209,10 +209,10 @@ def csv_sheets(itens):
     return buffer.getvalue().encode("utf-8-sig")
 
 
-def exportar_dietas(formato, itens, resumo, totais, contexto):
+def exportar_dietas(formato, itens, resumo, totais, contexto, colunas=COLUNAS):
     if formato == "xlsx" and any(isinstance(valor_celula(item, chave), str) and len(valor_celula(item, chave)) > 32767
-        for item in itens for chave, _, _ in COLUNAS):
+        for item in itens for chave, _, _ in colunas):
         raise ValueError("Um campo excede o limite de texto do Excel. Exporte em CSV ou ODS para preservar o conteúdo completo")
     gerador = {"xlsx": xlsx, "ods": ods}.get(formato)
-    arquivo = gerador(itens, resumo, totais, contexto) if gerador else csv_sheets(itens)
+    arquivo = gerador(itens, resumo, totais, contexto, colunas) if gerador else csv_sheets(itens, colunas)
     return arquivo, MIMES[formato]

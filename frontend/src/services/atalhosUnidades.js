@@ -9,9 +9,10 @@ export function criarAtalhoUnidade(filial, origem, enderecoPublico = null) {
     || typeof codigo !== 'string' || codigo.length > 50 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(codigo)) return null
 
   let base
-  try { base = new URL(enderecoPublico || origem) } catch { return null }
+  const destino = filial.url_servidor_local || enderecoPublico
+  try { base = new URL(destino || origem) } catch { return null }
   if (!['http:', 'https:'].includes(base.protocol)) return null
-  if (enderecoPublico && (base.username || base.password || !['', '/'].includes(base.pathname) || base.search || base.hash)) return null
+  if (destino && (base.username || base.password || !['', '/'].includes(base.pathname) || base.search || base.hash)) return null
   const url = new URL(`/${encodeURIComponent(codigo)}`, base.origin).href
   const nomeAtalho = `${MARCA.nome} - ${codigo}.lnk`
   const arquivoAtalho = criarAtalhoWindows(url, `${MARCA.nome} — ${filial.nome || codigo}`)

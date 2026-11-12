@@ -18,7 +18,9 @@ ARQUIVOS = (
     "docker-compose.https.yml", "infra/nginx-https.conf.template", "infra/https.env.example",
     "INSTALACAO-SERVIDOR.md", "HTTPS.md", "HOMOLOGACAO-LINUX.md",
     "MONITORAMENTO-E-RECUPERACAO.md", "ACTIVE-DIRECTORY.md", "PRODUCAO-LIMPA.md",
-    "infra/banco/README.md", "infra/banco/demeter-banco-limpo-0.1.1.sql",
+    "IMPLEMENTACAO-UNIDADES.md", "VALIDACAO-UNIDADES.md", "docker-compose.unidade.yml",
+    "output/pdf/Manual-implantacao-unidades-Demeter.pdf",
+    "infra/banco/README.md", f"infra/banco/demeter-banco-limpo-{VERSAO}.sql",
 )
 
 
@@ -55,7 +57,10 @@ def preparar_conteudo(raiz, destino, versao):
         alvo = destino / relativo
         alvo.parent.mkdir(parents=True, exist_ok=True)
         # Os scripts precisam de LF mesmo quando a distribuição é gerada no Windows.
-        alvo.write_text(origem.read_text(encoding="utf-8"), encoding="utf-8", newline="\n")
+        if origem.suffix == ".pdf":
+            shutil.copyfile(origem, alvo)
+        else:
+            alvo.write_text(origem.read_text(encoding="utf-8"), encoding="utf-8", newline="\n")
         alvo.chmod(0o755 if alvo.suffix == ".sh" else 0o644)
     compose = (raiz / "docker-compose.prod.yml").read_text(encoding="utf-8")
     for servico in ("backend", "frontend"):

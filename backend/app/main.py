@@ -2,6 +2,9 @@
 import logging
 import asyncio
 from contextlib import asynccontextmanager
+from uuid import uuid4
+from sqlalchemy import select
+from sqlalchemy.exc import DBAPIError
 
 from fastapi import FastAPI, HTTPException, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,6 +15,7 @@ from fastapi.responses import JSONResponse
 from .api import admin, assistencia, auth, cozinha, gestao, melhorias, monitoramento, operacao, pedidos, public_kiosk, relatorio_dietas, relatorios
 from .core.config import settings
 from .core.versao import VERSAO
+from .core.migracao_rede import preparar_identidades, instalar_captura
 from .core.database import SessionLocal, engine
 from .core.login_usuarios import migrar_login_usuarios
 from .core.migracao_seguranca import migrar_seguranca
@@ -32,7 +36,11 @@ from .services.monitoramento import EstadoMonitoramento
 from .services.contexto_operacao import executar_contexto
 from .api import recebimento_qr
 from .api import email as email_api
+from .api import rede as rede_api
+from .api import relatorio_rede as relatorio_rede_api
 from .services.fila_email import executar_fila_email
+from .services.agente_unidade import carregar_vinculo, inicializar_estado, executar_agente
+from .models.rede import EstadoUnidadeLocal
 
 logging.basicConfig(level=logging.INFO)
 INTERVALO_VALIDACAO_WS = 30
@@ -42,6 +50,7 @@ INTERVALO_VALIDACAO_WS = 30
 async def lifespan(app: FastAPI):
     # Cria as tabelas (MVP; migrações com Alembic podem ser adicionadas depois)
     async with engine.begin() as conn:
+        await conn.run_sync(preparar_identidades)
         await conn.run_sync(Base.metadata.create_all)
         await conn.run_sync(migrar_login_usuarios)
         await conn.run_sync(migrar_seguranca)
@@ -52,29 +61,38 @@ async def lifespan(app: FastAPI):
         await conn.run_sync(migrar_assistencia)
         await conn.run_sync(migrar_recebimento_qr)
         await conn.run_sync(migrar_email)
+        await conn.run_sync(instalar_captura)
     async with SessionLocal() as db:
         await executar_seed(db)
         if settings.APP_ENV == "production":
             await conferir_credenciais_producao(db)
+        if settings.MODO_SERVIDOR != "UNIDADE" and await db.get(EstadoUnidadeLocal, 1) is not None:
+            raise RuntimeError("Este banco está vinculado a uma unidade e deve manter MODO_SERVIDOR=UNIDADE")
+    if settings.MODO_SERVIDOR == "UNIDADE":
+        await inicializar_estado(SessionLocal, carregar_vinculo())
     parar = asyncio.Event()
+    app.state.rede_instancia = str(uuid4())
     app.state.monitoramento = EstadoMonitoramento()
     tarefa = asyncio.create_task(executar_fila(SessionLocal, parar, app.state.monitoramento.fila))
     contexto = asyncio.create_task(executar_contexto(SessionLocal, parar, gerenciador_ws))
     emails = asyncio.create_task(executar_fila_email(SessionLocal, parar))
+    rede = asyncio.create_task(executar_agente(SessionLocal, parar))
     try:
         yield
     finally:
         parar.set()
         try:
-            await asyncio.wait_for(asyncio.gather(tarefa, contexto, emails), timeout=10)
+            await asyncio.wait_for(asyncio.gather(tarefa, contexto, emails, rede), timeout=10)
         except TimeoutError:
             tarefa.cancel()
             contexto.cancel()
             emails.cancel()
-            await asyncio.gather(tarefa, contexto, emails, return_exceptions=True)
+            rede.cancel()
+            await asyncio.gather(tarefa, contexto, emails, rede, return_exceptions=True)
 
 
 app = FastAPI(title=settings.APP_NAME, version=VERSAO, lifespan=lifespan)
+app.state.rede_instancia = str(uuid4())
 
 app.add_middleware(
     CORSMiddleware,
@@ -98,6 +116,20 @@ app.include_router(monitoramento.router)
 app.include_router(assistencia.router)
 app.include_router(recebimento_qr.router)
 app.include_router(email_api.router)
+app.include_router(rede_api.router)
+app.include_router(relatorio_rede_api.router)
+
+
+@app.exception_handler(DBAPIError)
+async def proteger_operacao_remota(request, erro):
+    mensagem = str(erro.orig)
+    if "DEMETER_SERVIDOR_LOCAL" in mensagem:
+        return JSONResponse(status_code=409, content={"detail": "A operação e os cadastros desta unidade estão no servidor local. Use o endereço fornecido pela TI"})
+    if "DEMETER_UNIDADE_EM_PREPARACAO" in mensagem:
+        return JSONResponse(status_code=409, content={"detail": "A unidade está em preparação. Aguarde a primeira ativação no central"})
+    if "DEMETER_" in mensagem:
+        return JSONResponse(status_code=409, content={"detail": "A alteração conflita com a integridade do servidor da unidade. Consulte a TI"})
+    raise erro
 
 
 @app.exception_handler(RequestValidationError)
@@ -125,7 +157,7 @@ async def health():
 @app.get("/api/configuracao/instalacao")
 async def configuracao_instalacao():
     # Somente o endereço distribuído aos clientes; configurações privadas não são expostas.
-    return {"url_publica": settings.URL_PUBLICA or None}
+    return {"url_publica": settings.URL_PUBLICA or None, "modo_servidor": settings.MODO_SERVIDOR}
 
 
 @app.websocket("/ws/operacao/{filial_id}")

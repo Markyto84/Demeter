@@ -45,6 +45,7 @@ export default function Kiosk() {
     )
   if (!config)
     return <div role="status" className="auth-shell"><div className="space-y-5 text-center"><MarcaAplicacao /><p>Preparando o formulário da sua unidade…</p></div></div>
+  if (config.servidor_local) return <div className="auth-shell"><section className="max-w-lg space-y-5 rounded-2xl bg-panel p-6 text-center"><MarcaAplicacao /><h1 className="text-xl font-bold">O atendimento está na sua unidade</h1><p>Use o endereço local para enviar as solicitações e continuar o cuidado.</p><a className="ui-button ui-button-primary" href={`${config.servidor_local}/${config.filial.codigo_slug}`}>Abrir formulário da unidade</a></section></div>
 
   const dietaSelecionada = (id) => config.dietas.find((d) => d.id === Number(id))
 

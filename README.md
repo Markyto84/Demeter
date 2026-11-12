@@ -3,8 +3,24 @@
 **Nutrição e cuidado em cada etapa.**
 
 O Deméter reúne a solicitação de refeições, o preparo na cozinha, a impressão e a
-comprovação de entrega das unidades hospitalares. A versão **0.1.1** está preparada
+comprovação de entrega das unidades hospitalares. A versão **0.2.0** está preparada
 para uma instalação nova com banco limpo, sem transportar os dados da estação de desenvolvimento.
+
+## Servidores nas unidades
+
+O módulo permite um servidor local por unidade e um central para consolidação.
+Após a ativação, pedidos, cozinha, impressão e entrega funcionam na rede local
+durante a interrupção do enlace com o central. O envio usa fila transacional,
+confirmação, identificadores globais e detecção de divergências. A central reúne os
+relatórios sem repetir efeitos operacionais.
+
+Cadastros podem ser alterados na unidade ou propostos pela central, com confirmação
+de aplicação e proteção contra mudanças concorrentes. A instalação independente
+continua sendo o padrão. A ativação é uma transferência explícita por unidade,
+após homologação; não há migração automática nem failover de hardware.
+
+Consulte o [manual de implantação](IMPLEMENTACAO-UNIDADES.md) e a
+[versão em PDF](output/pdf/Manual-implantacao-unidades-Demeter.pdf).
 
 ## Funcionalidades disponíveis
 
