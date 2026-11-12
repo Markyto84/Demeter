@@ -12,7 +12,7 @@ import unittest
 from unittest.mock import AsyncMock, patch
 
 import httpx
-from jose import jwt
+import jwt
 from pydantic import ValidationError
 from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine

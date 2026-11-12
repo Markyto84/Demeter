@@ -22,6 +22,7 @@ services:
     container_name: dietas-backend
     environment:
       APP_ENV: production
+      INICIALIZAR_DEMONSTRACAO: "false"
       DATABASE_URL: postgresql+asyncpg://dietas:${POSTGRES_PASSWORD:?Configure uma senha exclusiva para o banco}@db:5432/dietas
       JWT_SECRET: ${JWT_SECRET:?Configure um segredo JWT exclusivo de pelo menos 32 caracteres}
       ADMIN_INICIAL_SENHA: ${ADMIN_INICIAL_SENHA:-}

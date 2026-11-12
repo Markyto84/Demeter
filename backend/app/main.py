@@ -11,6 +11,7 @@ from fastapi.responses import JSONResponse
 
 from .api import admin, assistencia, auth, cozinha, gestao, melhorias, monitoramento, operacao, pedidos, public_kiosk, relatorio_dietas, relatorios
 from .core.config import settings
+from .core.versao import VERSAO
 from .core.database import SessionLocal, engine
 from .core.login_usuarios import migrar_login_usuarios
 from .core.migracao_seguranca import migrar_seguranca
@@ -73,7 +74,7 @@ async def lifespan(app: FastAPI):
             await asyncio.gather(tarefa, contexto, emails, return_exceptions=True)
 
 
-app = FastAPI(title=settings.APP_NAME, version="0.1.0", lifespan=lifespan)
+app = FastAPI(title=settings.APP_NAME, version=VERSAO, lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

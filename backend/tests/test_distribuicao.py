@@ -6,11 +6,40 @@ from pathlib import Path
 import subprocess
 from tempfile import TemporaryDirectory
 import unittest
+from unittest.mock import patch
 
+import gerar_instalador
 from gerar_instalador import ROOT, preparar_conteudo, gerar_run, versao_valida
 
 
 class DistribuicaoTest(unittest.TestCase):
+    def test_imagem_de_outra_revisao_ou_plataforma_nao_e_distribuida(self):
+        base = {"Os": "linux", "Architecture": "amd64", "Id": "imagem-ficticia", "Config": {"Labels": {}}}
+        with self.assertRaisesRegex(SystemExit, "outra revisão"):
+            gerar_instalador.validar_imagem(base, "demeter/backend:0.1.1", "revisao-atual", "0.1.1")
+        rotulos = {"org.opencontainers.image.revision": "revisao-atual", "org.opencontainers.image.version": "0.1.0"}
+        with self.assertRaisesRegex(SystemExit, "outra revisão"):
+            gerar_instalador.validar_imagem({**base, "Config": {"Labels": rotulos}}, "demeter/frontend:0.1.1", "revisao-atual", "0.1.1")
+        with self.assertRaisesRegex(SystemExit, "incompatível"):
+            gerar_instalador.validar_imagem({**base, "Architecture": "arm64"}, "postgres:16-alpine", "revisao-atual", "0.1.1")
+
+    def test_recusa_fontes_nao_registrados_antes_de_compilar(self):
+        with TemporaryDirectory() as pasta:
+            raiz = Path(pasta)
+            subprocess.run(["git", "init", str(raiz)], check=True, capture_output=True)
+            (raiz / "arquivo-pendente.txt").write_text("Alteração fictícia não registrada", encoding="utf-8")
+            executar = subprocess.run
+
+            def sem_docker(args, *outros, **opcoes):
+                if args[0] == "docker":
+                    raise AssertionError("Não deve compilar uma distribuição com fontes pendentes")
+                return executar(args, *outros, **opcoes)
+
+            with patch.object(gerar_instalador, "ROOT", raiz), patch("sys.argv", ["gerar_instalador.py"]), \
+                patch("subprocess.run", side_effect=sem_docker):
+                with self.assertRaisesRegex(SystemExit, "Registre as alterações"):
+                    gerar_instalador.principal()
+
     def test_conteudo_explicito_preserva_configuracao_sem_levar_privados(self):
         with TemporaryDirectory() as pasta:
             destino = Path(pasta)

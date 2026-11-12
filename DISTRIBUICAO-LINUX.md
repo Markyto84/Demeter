@@ -38,7 +38,7 @@ conforme [Instalação do servidor](INSTALACAO-SERVIDOR.md). Conclua a
 Na estação de preparação, com Python 3, Git e Docker Linux/amd64:
 
 ```sh
-python backend/gerar_instalador.py --versao 0.1.0 --saida dist
+python backend/gerar_instalador.py --versao 0.1.1 --saida dist
 ```
 
 O gerador constrói as imagens, exporta somente imagens (nunca volumes ou bancos)
@@ -46,6 +46,13 @@ e copia uma lista explícita de arquivos. Segredos, certificados reais, logs, da
 de pacientes, `.env`, backups e dependências da estação não entram no pacote.
 Os contextos Docker têm `.dockerignore` para impedir cópia de ambientes privados
 e dependências Windows durante o build Linux.
+
+A versão 0.1.1 inicia com quatro perfis de acesso e um administrador de TI com
+senha temporária exclusiva. Não cria unidades nem registros operacionais. Veja
+[produção limpa](PRODUCAO-LIMPA.md). O código deve estar registrado no Git antes
+da geração: o instalador recusa fontes com alterações pendentes.
+As imagens da aplicação são identificadas pela revisão Git e pela versão; mesmo
+com `--sem-compilar`, imagens de outra revisão são recusadas.
 
 O arquivo `release.json` registra revisão Git, versão, IDs das imagens e hashes
 dos arquivos. O `.sha256` acompanha o executável; conferir a soma detecta danos

@@ -10,12 +10,15 @@ import subprocess
 import tarfile
 from tempfile import TemporaryDirectory
 
+from app.core.versao import VERSAO
+
 ROOT = Path(__file__).resolve().parent.parent
 ARQUIVOS = (
     "servidor.sh", "backend/configurar_servidor.py", "backend/app/core/endereco_publico.py",
     "docker-compose.https.yml", "infra/nginx-https.conf.template", "infra/https.env.example",
     "INSTALACAO-SERVIDOR.md", "HTTPS.md", "HOMOLOGACAO-LINUX.md",
-    "MONITORAMENTO-E-RECUPERACAO.md", "ACTIVE-DIRECTORY.md",
+    "MONITORAMENTO-E-RECUPERACAO.md", "ACTIVE-DIRECTORY.md", "PRODUCAO-LIMPA.md",
+    "infra/banco/README.md", "infra/banco/demeter-banco-limpo-0.1.1.sql",
 )
 
 
@@ -31,6 +34,16 @@ def versao_valida(valor):
     if len(valor) > 60 or not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+(?:-[a-zA-Z0-9.-]+)?", valor):
         raise ValueError("Use uma versão como 0.1.0 ou 0.1.0-rc1.")
     return valor
+
+
+def validar_imagem(dados, tag, revisao, versao):
+    if dados["Os"] != "linux" or dados["Architecture"] != "amd64":
+        raise SystemExit(f"Imagem incompatível com o destino linux/amd64: {tag}")
+    if tag.startswith(("demeter/backend:", "demeter/frontend:")):
+        rotulos = dados.get("Config", {}).get("Labels") or {}
+        if rotulos.get("org.opencontainers.image.revision") != revisao or rotulos.get("org.opencontainers.image.version") != versao:
+            raise SystemExit(f"Imagem de outra revisão ou versão: {tag}. Compile novamente sem --sem-compilar.")
+    return {"id": dados["Id"], "plataforma": "linux/amd64"}
 
 
 def preparar_conteudo(raiz, destino, versao):
@@ -63,7 +76,7 @@ def gerar_run(conteudo, saida, versao, *, revisao, imagens):
     versao_valida(versao)
     manifesto = {"produto": "Deméter", "versao": versao, "plataforma": "linux/amd64",
         "gerado_em_utc": datetime.now(timezone.utc).isoformat(), "revisao_git": revisao,
-        "imagens": imagens, "arquivos": {}}
+        "imagens": imagens, "inicializacao": "producao-limpa", "arquivos": {}}
     for arquivo in sorted(conteudo.rglob("*")):
         if arquivo.is_symlink():
             raise ValueError("Links simbólicos não são permitidos no pacote.")
@@ -99,7 +112,7 @@ def gerar_run(conteudo, saida, versao, *, revisao, imagens):
 
 def principal():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--versao", default="0.1.0")
+    parser.add_argument("--versao", default=VERSAO)
     parser.add_argument("--saida", type=Path, default=ROOT / "dist")
     parser.add_argument("--sem-compilar", action="store_true", help="Usar imagens locais já compiladas desta versão")
     args = parser.parse_args()
@@ -107,18 +120,22 @@ def principal():
     saida = args.saida.resolve() / f"demeter-{versao}-linux-amd64.run"
     if saida.exists():
         raise SystemExit("Saída já existente; escolha outra pasta ou versão.")
+    if subprocess.check_output(["git", "status", "--porcelain", "--untracked-files=normal"], cwd=ROOT, text=True).strip():
+        raise SystemExit("Registre as alterações no Git antes de gerar a distribuição; o pacote deve corresponder à revisão informada.")
+    revisao = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
     for servico in ("backend", "frontend"):
         if not args.sem_compilar:
             print(f"Compilando {servico} para Linux x86_64...", flush=True)
-            subprocess.run(["docker", "build", "--platform", "linux/amd64", "-t", f"demeter/{servico}:{versao}", str(ROOT / servico)], check=True)
+            subprocess.run(["docker", "build", "--pull", "--platform", "linux/amd64",
+                "--label", f"org.opencontainers.image.revision={revisao}",
+                "--label", f"org.opencontainers.image.version={versao}",
+                "--label", "org.opencontainers.image.source=https://github.com/Markyto84/Demeter",
+                "-t", f"demeter/{servico}:{versao}", str(ROOT / servico)], check=True)
     tags = [f"demeter/backend:{versao}", f"demeter/frontend:{versao}", "postgres:16-alpine", "python:3.12-slim"]
     imagens = {}
     for tag in tags:
         dados = json.loads(subprocess.check_output(["docker", "image", "inspect", tag], text=True))[0]
-        if dados["Os"] != "linux" or dados["Architecture"] != "amd64":
-            raise SystemExit(f"Imagem incompatível com o destino linux/amd64: {tag}")
-        imagens[tag] = {"id": dados["Id"], "plataforma": "linux/amd64"}
-    revisao = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+        imagens[tag] = validar_imagem(dados, tag, revisao, versao)
     pasta_work = ROOT / "work"
     pasta_work.mkdir(exist_ok=True)
     with TemporaryDirectory(prefix="distribuicao-", dir=pasta_work) as temporario:

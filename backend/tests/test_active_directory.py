@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 from uuid import UUID
 
 import httpx
-from jose import jwt
+import jwt
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 

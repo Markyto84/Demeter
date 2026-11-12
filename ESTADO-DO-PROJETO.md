@@ -1,5 +1,12 @@
 # 📋 Estado do Projeto — Documento de Continuidade
 
+> **Referência atual — 12/11/2026, versão 0.1.1:** instalação nova com banco limpo,
+> sem transportar a base atual. O fluxo vigente de entrega usa filipeta assinada
+> manualmente e lançamento pela Nutrição com foto; o painel das copeiras está
+> desativado. Consulte o [README](README.md), a [revisão atual](REVISAO-APLICACAO-2026-11-12.md)
+> e o [roteiro de produção limpa](PRODUCAO-LIMPA.md). Entradas datadas abaixo
+> registram a evolução do projeto e podem descrever comportamentos anteriores.
+
 > **Instrução para o assistente:** este arquivo é a memória do projeto.
 > Ao iniciar uma sessão nova em qualquer estação, leia-o primeiro para retomar o contexto.
 
@@ -12,8 +19,8 @@ preparo, entrega e auditoria de refeições/dietas hospitalares.
   por registro profissional (CRM/COREN/Matrícula) + nome do solicitante
 - **Painel da Cozinha** (`/cozinha/unidade-havai`): consulta e operação sem login, Kanban em tempo real (WebSocket),
   alerta sonoro, destaque para dietas severas, reimpressão de filipetas; responsivo para celular
-- **Entregas das copeiras** (`/entregas/1`): refeições prontas, copeira identificada pelo login
-  e finalização direta com responsável e horário; assinaturas anteriores preservadas; responsivo para celular
+- **Comprovação de entrega** (`/receber`, pelo QR Code): Nutrição/TI autenticada lança
+  recebedor, data/hora da entrega e foto da filipeta assinada. O painel `/entregas/1` está desativado.
 - **Gestão de Nutrição** (`/gestao`): catálogo de dietas, motor de formulários dinâmicos, relatórios
 - **Admin TI** (`/admin`): filiais, IPs de impressoras, usuários/perfis (RBAC) e relatórios de todas as unidades
 
@@ -38,7 +45,7 @@ Set-Location 'C:\Users\Suporte\Documents\Projeto Demeter'
 .\stop.ps1                                 # encerra frontend e API
 ```
 
-## 4. Estado atual (o que já funciona)
+## 4. Histórico de implementação
 
 - ✅ **URLs das cozinhas por nome da unidade**, em 27/10/2026:
   `/cozinha/unidade-havai`, `/cozinha/unidade-colorado` e `/cozinha/unidade-dubai`.
@@ -478,12 +485,12 @@ operacionais. A implantação em outro servidor continua como etapa própria.
   tem Assinatura e Data e hora para preenchimento manual; preservar os dados originais nos pedidos
 - **Operação pública:** usar `/api/operacao` e `/ws/operacao/{id}` com projeção explícita dos dados
   operacionais. O canal interno `/ws/cozinha/{id}` exige perfil de operação, JWT e unidade permitida
-- **Entregas:** somente PRONTO pode virar ENTREGUE, com copeira online vinculada à unidade.
-  Manter UPDATE condicionado ao status anterior e chave única por pedido; rotas internas também
-  não podem sobrescrever ENTREGUE. Preservar `concluido_em` (fim do preparo) para o SLA
-- **Assinatura:** `EntregaCreate` exige nome do recebedor e traços normalizados; o servidor gera
-  o PNG e salva em `recebimentos_entregas` na mesma transação da entrega. Não aceitar timestamp
-  enviado pelo navegador. Consulta de comprovantes somente nos endpoints autenticados de relatório
+- **Entregas:** somente PRONTO pode virar ENTREGUE. Nutrição/TI autorizada à unidade
+  informa recebedor, data/hora efetiva e foto da filipeta assinada. A entrega e o comprovante
+  são gravados juntos e protegidos contra repetição. Preservar `concluido_em` para o SLA.
+- **Comprovante:** manter horário da entrega e do lançamento separados; guardar somente
+  JPEG normalizado de até 300 KiB, com integridade e dimensões. Consultas exigem permissão.
+  Assinaturas digitais anteriores permanecem no histórico; o painel de copeiras está desativado.
 - **Relatório de dietas:** consulta e exportação usam os mesmos filtros e permissões em
   `/api/relatorios/dietas-periodo`. Exportar todas as linhas, sem limitar à página da tela;
   resumo e detalhes do arquivo vêm do mesmo conjunto de registros. Horários em Brasília;
@@ -509,8 +516,11 @@ operacionais. A implantação em outro servidor continua como etapa própria.
   via script — preferir arquivos JSON lidos com `encoding='utf-8'`
 - **Idioma no navegador:** manter `lang="pt-BR"` e `translate="no"` no HTML. Rótulos corretos na
   API podem aparecer trocados se o navegador traduzir a página; validar também o acesso pelo IP
-- **Estrutura única:** editar a pasta canônica indicada na seção 2. Os caminhos anteriores são
-  junções para ela; as versões arquivadas ficam fora do projeto. O nome do Compose mantém o volume do banco
+- **Estrutura única:** a instalação ativa usa a pasta canônica indicada na seção 2.
+  Preserve worktrees com alterações pendentes. O nome do Compose mantém o volume do banco.
+- **Instalação limpa:** novas bases recebem somente quatro perfis e um administrador
+  temporário. Reinícios não recriam usuários nem redefinem suas senhas. Nunca limpar a base
+  existente para produzir um instalador ou exportar o esquema SQL.
 - **Tema:** usar os tokens `brand` (#0070AD), `brand-vibrant` (#17ABDA), `brand-ink` e a escala azulada
   no `@theme` de `frontend/src/index.css`. Texto branco no Blue e escuro no Vibrant Blue. Cabeçalhos
   compartilham `brand-header`; conservar as cores funcionais de erros, restrições e estados de produção

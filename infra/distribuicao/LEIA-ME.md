@@ -23,6 +23,12 @@ A senha inicial fica somente em `work/credencial-inicial.txt`, no servidor, com
 acesso restrito. O primeiro login de `admin` exige sua troca. O pacote distribuído
 não contém contas, senhas, dados de pacientes, backups nem certificados reais.
 
+O banco começa sem unidades, dietas, cardápios, formulários de unidade,
+impressoras, pacientes ou pedidos de demonstração. A aplicação cria somente os
+quatro perfis de acesso e o administrador inicial. Depois de trocar sua senha,
+cadastre a primeira unidade em Administração → Unidades e configure a operação.
+Reiniciar os serviços preserva o administrador e não cria dados de exemplo.
+
 ## Extração e retomada manual
 
 ```sh

@@ -51,7 +51,7 @@ function Wait-Http([string]$Url) {
 
 function Show-ServiceInfo {
     Write-Host ("Dem{0}ter em execucao a partir de: {1}" -f [char]0x00E9, $projectRoot) -ForegroundColor Green
-    Write-Host "Formulario: $frontendBase/unidade-havai"
+    Write-Host 'Formularios: use os links cadastrados em Administracao > Unidades.'
     Write-Host "Login:      $frontendBase/login"
     Write-Host "Logs:       $logsRoot"
 }
